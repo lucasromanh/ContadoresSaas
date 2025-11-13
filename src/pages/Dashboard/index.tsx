@@ -6,8 +6,10 @@ import { useDashboard } from '../../hooks/useDashboard'
 
 function StatCard({ title, value }: { title: string; value: string }) {
   return (
-    <Card title={title}>
-      <div className="text-2xl font-semibold">{value}</div>
+    <Card className="flex items-center justify-between" title={title}>
+      <div>
+        <div className="text-2xl font-semibold">{value}</div>
+      </div>
     </Card>
   )
 }
@@ -22,6 +24,9 @@ export const DashboardPage: React.FC = () => {
   const ingresos = data?.ingresos ?? '$ 125.000'
   const costos = data?.costos ?? '$ 45.000'
   const margen = data?.margen ?? '$ 80.000'
+  const ranking = data?.ranking ?? []
+  const estado = data?.estado ?? null
+  const alertas = data?.alertas ?? []
 
   return (
     <div className="space-y-6">
@@ -39,9 +44,43 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card title="Ranking de clientes">{JSON.stringify(data?.ranking ?? 'sin datos')}</Card>
-        <Card title="Estado anual">{JSON.stringify(data?.estado ?? 'sin datos')}</Card>
-        <Card title="Alertas">{JSON.stringify(data?.alertas ?? 'sin datos')}</Card>
+        <Card title="Ranking de clientes">
+          {ranking.length === 0 ? (
+            <div className="text-sm text-slate-500">Sin datos</div>
+          ) : (
+            <ul className="space-y-2">
+              {ranking.map((r: any, i: number) => (
+                <li key={i} className="flex items-center justify-between">
+                  <div className="font-medium">{r.name ?? r.nombre ?? 'Cliente'}</div>
+                  <div className="text-sm text-slate-600">{r.value ?? r.monto ?? '-'}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Card>
+
+        <Card title="Estado anual">
+          {estado ? (
+            <div className="space-y-1 text-sm">
+              <div>Año: <span className="font-medium">{estado.año ?? estado.year ?? '-'}</span></div>
+              <div>Saldo: <span className="font-medium">{estado.saldo ?? estado.balance ?? '-'}</span></div>
+            </div>
+          ) : (
+            <div className="text-sm text-slate-500">Sin datos</div>
+          )}
+        </Card>
+
+        <Card title="Alertas">
+          {alertas.length === 0 ? (
+            <div className="text-sm text-slate-500">Sin alertas</div>
+          ) : (
+            <ul className="space-y-2">
+              {alertas.map((a: any, i: number) => (
+                <li key={i} className="text-sm text-amber-700 dark:text-amber-300">• {a}</li>
+              ))}
+            </ul>
+          )}
+        </Card>
       </div>
     </div>
   )
