@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { RiskSummary } from './components/RiskSummary'
 import { RiskStats } from './components/RiskStats'
-import { RiskFilters } from './components/RiskFilters'
 import { RiskCard } from './components/RiskCard'
 import { RiskTable } from './components/RiskTable'
 import { RiskDetailDrawer } from './components/RiskDetailDrawer'
@@ -9,6 +8,32 @@ import riesgoService from './services/riesgoService'
 import { AlertaFiscal } from './services/riesgoService'
 import { Card } from '../../components/ui/Card'
 import { AlertTriangle, FileText, ShieldAlert, ClipboardList } from 'lucide-react'
+
+/**
+ * Local fallback RiskFilters component because ./components/RiskFilters was missing.
+ * Props: onFilter(f: any)
+ */
+const RiskFilters: React.FC<{ onFilter: (f: any) => void }> = ({ onFilter }) => {
+  const [query, setQuery] = useState('')
+
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    onFilter(query ? { q: query } : {})
+  }
+
+  return (
+    <form onSubmit={onSubmit} className="flex gap-2">
+      <input
+        type="text"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Buscar..."
+        className="border rounded px-2 py-1 flex-1"
+      />
+      <button type="submit" className="px-3 py-1 bg-sky-500 text-white rounded">Filtrar</button>
+    </form>
+  )
+}
 
 export const RiesgoFiscalPage: React.FC = () => {
   const [alertas, setAlertas] = useState<AlertaFiscal[]>([])
