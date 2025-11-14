@@ -20,15 +20,19 @@ export default function TimelineVencimientos({ items }: { items: Vencimiento[] }
             <div key={key} className="p-2 border rounded min-h-[120px] bg-white/5 dark:bg-slate-900">
               <div className="text-sm font-semibold">{d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
               <div className="mt-2 space-y-2">
-                {dayItems.map(it => (
-                  <div key={it.id} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${it.criticidad==='alta'?'bg-red-500': it.criticidad==='media'?'bg-amber-400':'bg-emerald-400'}`}></div>
-                      <div className="truncate max-w-[120px]">{it.descripcion}</div>
+                {dayItems.map(it => {
+                  const dotClass = it.criticidad==='alta'?'bg-red-500': it.criticidad==='media'?'bg-amber-400':'bg-emerald-400'
+                  const descClass = it.estado === 'pagado' ? 'text-emerald-300 line-through opacity-80' : it.estado === 'presentado' ? 'text-slate-400' : it.estado === 'vencido' ? 'text-red-400' : ''
+                  return (
+                    <div key={it.id} className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`w-2 h-2 rounded-full ${dotClass}`}></div>
+                        <div className="truncate max-w-[120px] min-w-0 overflow-hidden">{it.descripcion}</div>
+                      </div>
+                      <div className={`text-xs text-slate-500 ${descClass}`}>{it.estado}</div>
                     </div>
-                    <div className="text-xs text-slate-500">{it.estado}</div>
-                  </div>
-                ))}
+                  )
+                })}
                 {dayItems.length===0 && <div className="text-xs text-slate-400">Sin eventos</div>}
               </div>
             </div>

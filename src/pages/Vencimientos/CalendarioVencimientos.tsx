@@ -56,9 +56,12 @@ export default function CalendarioVencimientos({ items, onEventClick }: { items:
               <div className="text-xs text-slate-400">{dayNum ?? ''}</div>
               {!isEmpty && (
                 <div className="mt-1 space-y-1">
-                  {dayItems.slice(0,3).map(it => (
-                    <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate ${it.criticidad==='alta'?'text-red-400': it.criticidad==='media'?'text-amber-300':'text-emerald-300'}`}>{it.tipo} • {it.cliente}</div>
-                  ))}
+                  {dayItems.slice(0,3).map(it => {
+                    const estadoClass = it.estado === 'vencido' ? 'text-red-400' : it.estado === 'pagado' ? 'text-emerald-300 line-through opacity-80' : it.estado === 'presentado' ? 'text-slate-400' : (it.criticidad==='alta'?'text-red-400': it.criticidad==='media'?'text-amber-300':'text-emerald-300')
+                    return (
+                      <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate overflow-hidden min-w-0 ${estadoClass}`}>{it.tipo} • {it.cliente}</div>
+                    )
+                  })}
                   {dayItems.length>3 && <div className="text-xs text-slate-400">+{dayItems.length-3} más</div>}
                 </div>
               )}
