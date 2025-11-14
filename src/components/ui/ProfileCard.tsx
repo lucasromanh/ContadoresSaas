@@ -52,4 +52,6 @@ const ProfileCard: React.FC<{ user: User }> = ({ user }) => {
   )
 }
 
+export { ProfileCard }
+
 export default ProfileCard

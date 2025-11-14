@@ -16,8 +16,10 @@ const inputVariants = cva('flex h-10 w-full rounded-md border px-3 py-2 text-sm 
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, VariantProps<typeof inputVariants> {}
 
-export const Input: React.FC<InputProps> = ({ className, variant, ...props }) => {
-  return <input {...props} className={cn(inputVariants({ variant }), className)} />
-}
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className, variant, ...props }, ref) => {
+  return <input ref={ref} {...props} className={cn(inputVariants({ variant }), className)} />
+})
+
+Input.displayName = 'Input'
 
 export default Input

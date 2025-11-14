@@ -1,17 +1,19 @@
 import React from 'react'
 import { Card } from '../../components/ui/Card'
+import ClickableCard from '../../components/ui/ClickableCard'
 import { RechartsChart } from '../../components/charts/RechartsChart'
 import { TremorChart } from '../../components/charts/TremorChart'
 import { useDashboard } from '../../hooks/useDashboard'
 import { useAppStore } from '../../store/useAppStore'
 
-function StatCard({ title, value }: { title: string; value: string }) {
+function StatCard({ title, value, to, onClick }: { title: string; value: string; to?: string; onClick?: () => void }) {
   return (
-    <Card className="flex items-center justify-between" title={title}>
-      <div>
-        <div className="text-2xl font-semibold">{value}</div>
+    <ClickableCard title={title} to={to} onClick={onClick} className="flex items-center justify-center h-28">
+      <div className="text-center">
+        <div className="text-3xl md:text-4xl font-bold">{value}</div>
+        <div className="text-sm text-slate-500 dark:text-slate-300 mt-1">{title}</div>
       </div>
-    </Card>
+    </ClickableCard>
   )
 }
 
@@ -38,9 +40,9 @@ export const DashboardPage: React.FC = () => {
         </div>
       )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard title="Ingresos" value={ingresos} />
-        <StatCard title="Costos" value={costos} />
-        <StatCard title="Margen" value={margen} />
+        <StatCard title="Ingresos" value={ingresos} to="/ingresos/detalle" />
+        <StatCard title="Costos" value={costos} to="/costos/detalle" />
+        <StatCard title="Margen" value={margen} to="/margen/detalle" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -58,7 +60,7 @@ export const DashboardPage: React.FC = () => {
             <ul className="space-y-2">
               {ranking.map((r: any, i: number) => (
                 <li key={i} className="flex items-center justify-between">
-                  <div className="font-medium">{r.name ?? r.nombre ?? 'Cliente'}</div>
+                  <a className="font-medium text-blue-600 hover:underline" href="/clientes">{r.name ?? r.nombre ?? 'Cliente'}</a>
                   <div className="text-sm text-slate-600">{r.value ?? r.monto ?? '-'}</div>
                 </li>
               ))}
