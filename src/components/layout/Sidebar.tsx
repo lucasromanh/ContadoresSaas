@@ -4,6 +4,7 @@ import { cn } from '../../lib/utils'
 import { useUserStore } from '../../store/useUserStore'
 import ProfileCard from '../ui/ProfileCard'
 import alertasService from '../../pages/Alertas/services/alertasService'
+import { listFacturas, emitter as facturasEmitter } from '../../modules/ocr/facturasService'
 
 export const Sidebar: React.FC = () => {
   const links = [
@@ -20,6 +21,7 @@ export const Sidebar: React.FC = () => {
   const user = useUserStore((s) => s.user)
   const [unread, setUnread] = useState<number>(0)
   const [pulse, setPulse] = useState(false)
+  const [facturasTotal, setFacturasTotal] = useState<number>(0)
 
   useEffect(() => {
     let mounted = true
@@ -54,10 +56,28 @@ export const Sidebar: React.FC = () => {
     }
 
     alertasService.emitter.addEventListener('new-alert', handler)
+    // initialize facturas total
+    try{
+      const list = listFacturas()
+      const total = (list || []).reduce((s:any,f:any)=> s + (Number(f.totales?.total || 0)), 0)
+      if (mounted) setFacturasTotal(total)
+    }catch(e){}
+
+    const fHandler = (ev:any)=>{
+      try{
+        const payload = ev?.detail
+        // recalc total
+        const list = listFacturas()
+        const total = (list || []).reduce((s:any,f:any)=> s + (Number(f.totales?.total || 0)), 0)
+        if (mounted) setFacturasTotal(total)
+      }catch(e){}
+    }
+    try{ facturasEmitter.addEventListener('saved', fHandler) }catch(e){}
 
     return () => {
       mounted = false
       try{ alertasService.emitter.removeEventListener('new-alert', handler) }catch(e){}
+  try{ facturasEmitter.removeEventListener('saved', fHandler) }catch(e){}
     }
   }, [])
 
@@ -89,6 +109,10 @@ export const Sidebar: React.FC = () => {
               {unread > 0 && <span className={cn('ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100', pulse ? 'animate-pulse' : '')}>{unread}</span>}
             </div>
           </NavLink>
+          <div className="mt-2 px-2">
+            <div className="text-xs text-slate-500">Facturas guardadas</div>
+            <div className="text-sm font-semibold">Total: ${facturasTotal.toFixed(2)}</div>
+          </div>
         </nav>
       </div>
 

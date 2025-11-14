@@ -10,6 +10,9 @@ function saveAll(list:any[]){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
 }
 
+// Simple emitter so UI can react to changes
+export const emitter = new EventTarget()
+
 export function saveFactura(f:any){
   const all = loadAll()
   const id = Date.now().toString(36)
@@ -18,6 +21,8 @@ export function saveFactura(f:any){
   const normalized = normalizeFactura(f)
   all.push(normalized)
   saveAll(all)
+  // notify listeners
+  try{ emitter.dispatchEvent(new CustomEvent('saved', { detail: normalized })) }catch(e){}
   return normalized
 }
 
@@ -25,4 +30,4 @@ export function listFacturas(){
   return loadAll()
 }
 
-export default { saveFactura, listFacturas }
+export default { saveFactura, listFacturas, emitter }

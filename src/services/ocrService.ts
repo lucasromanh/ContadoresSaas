@@ -1,7 +1,7 @@
 // OCR wrapper using tesseract.js. This will create a worker for recognition and terminate it
 // after use. For better performance you can reuse a singleton worker.
 
-import { createWorker } from 'tesseract.js'
+import type TesseractType from 'tesseract.js'
 
 let workerInstance: any | null = null
 let workerInitializing: Promise<void> | null = null
@@ -9,12 +9,31 @@ let workerInitializing: Promise<void> | null = null
 async function ensureWorker() {
   if (workerInstance) return
   if (!workerInitializing) {
-    const w: any = createWorker()
     workerInitializing = (async () => {
-      await w.load()
-      await w.loadLanguage('spa')
-      await w.initialize('spa')
-      workerInstance = w
+      try{
+        // dynamic import to avoid bundling surprises
+        const t: any = await import('tesseract.js')
+        // createWorker may be sync or async depending on version
+        let maybeWorker: any = t.createWorker ? t.createWorker() : (t as any)
+        if (maybeWorker && typeof maybeWorker.then === 'function') {
+          maybeWorker = await maybeWorker
+        }
+
+        // If worker exposes load(), follow classic init flow. Otherwise assume it's ready or has initialize.
+        if (maybeWorker && typeof maybeWorker.load === 'function'){
+          await maybeWorker.load()
+          await maybeWorker.loadLanguage('spa').catch(()=> maybeWorker.loadLanguage('eng'))
+          await maybeWorker.initialize('spa').catch(()=> maybeWorker.initialize('eng'))
+        } else if (maybeWorker && typeof maybeWorker.initialize === 'function'){
+          // some builds might only provide initialize
+          try{ await maybeWorker.initialize('spa') }catch(e){ try{ await maybeWorker.initialize('eng') }catch(e){} }
+        }
+
+        workerInstance = maybeWorker
+      }catch(e){
+        console.warn('Failed to initialize tesseract worker', e)
+        workerInstance = null
+      }
     })()
   }
   return workerInitializing
