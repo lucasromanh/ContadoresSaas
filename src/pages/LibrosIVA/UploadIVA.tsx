@@ -66,9 +66,9 @@ export default function UploadIVA({ onProcessed }: Props) {
 
   return (
     <div>
-      <div onDragOver={(e)=>e.preventDefault()} onDrop={handleDrop} className="p-4 border border-dashed rounded mb-4">
-        <p className="text-sm text-neutral-500">Arrastra archivos aquí o usa el selector</p>
-        <input type="file" multiple onChange={handleFilesChange} className="mt-2" />
+      <div onDragOver={(e)=>e.preventDefault()} onDrop={handleDrop} className="p-4 border border-dashed rounded mb-4 bg-white/5 dark:bg-white/5">
+        <p className="text-sm text-slate-300 dark:text-slate-300">Arrastra archivos aquí o usa el selector</p>
+        <input type="file" multiple onChange={handleFilesChange} className="mt-2 text-slate-700 dark:text-slate-200" />
         <div className="mt-2">
           <button disabled={processing || files.length===0} onClick={processAll} className="btn-primary px-3 py-1">
             {processing ? 'Procesando...' : `Procesar ${files.length} archivo(s)`}

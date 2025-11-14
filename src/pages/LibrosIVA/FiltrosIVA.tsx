@@ -18,22 +18,22 @@ export default function FiltrosIVA({ onApply }: { onApply: (f: Filters) => void 
   }
 
   return (
-    <div className="flex gap-3 items-end">
+    <div className="flex gap-3 items-end text-slate-700 dark:text-slate-200">
       <div>
-        <label className="text-xs">Mes</label>
-        <input type="number" value={mes} onChange={(e)=>setMes(e.target.value)} className="block border px-2 py-1 rounded" placeholder="MM" />
+        <label className="text-xs text-slate-500 dark:text-slate-300">Mes</label>
+        <input type="number" value={mes} onChange={(e)=>setMes(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="MM" />
       </div>
       <div>
-        <label className="text-xs">Año</label>
-        <input type="number" value={year} onChange={(e)=>setYear(e.target.value)} className="block border px-2 py-1 rounded" placeholder="YYYY" />
+        <label className="text-xs text-slate-500 dark:text-slate-300">Año</label>
+        <input type="number" value={year} onChange={(e)=>setYear(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="YYYY" />
       </div>
       <div>
-        <label className="text-xs">CUIT</label>
-        <input value={cuit} onChange={(e)=>setCuit(e.target.value)} className="block border px-2 py-1 rounded" placeholder="20-..." />
+        <label className="text-xs text-slate-500 dark:text-slate-300">CUIT</label>
+        <input value={cuit} onChange={(e)=>setCuit(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="20-..." />
       </div>
       <div>
-        <label className="text-xs">Tipo</label>
-        <select value={tipo} onChange={(e)=>setTipo(e.target.value)} className="block border px-2 py-1 rounded">
+        <label className="text-xs text-slate-500 dark:text-slate-300">Tipo</label>
+        <select value={tipo} onChange={(e)=>setTipo(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100">
           <option value="">Todos</option>
           <option value="A">A</option>
           <option value="B">B</option>

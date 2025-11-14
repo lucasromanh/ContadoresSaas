@@ -11,12 +11,12 @@ export default function DetalleComprobante({ item, onClose, onMarked }: { item: 
   }
 
   return (
-    <div className="fixed right-4 top-12 w-96 h-[80vh] bg-white border rounded shadow-lg p-4 overflow-auto z-50">
+    <div className="fixed right-4 top-12 w-96 h-[80vh] bg-white dark:bg-slate-800 border rounded shadow-lg p-4 overflow-auto z-50">
       <div className="flex justify-between items-center mb-3">
-        <h3 className="font-semibold">Detalle {item.puntoVenta}-{item.numero}</h3>
-        <button onClick={onClose} className="text-sm text-neutral-500">Cerrar</button>
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">Detalle {item.puntoVenta}-{item.numero}</h3>
+        <button onClick={onClose} className="text-sm text-slate-600 dark:text-slate-300">Cerrar</button>
       </div>
-      <div className="text-sm space-y-2">
+      <div className="text-sm space-y-2 text-slate-700 dark:text-slate-200">
         <div><strong>Fecha:</strong> {item.fecha}</div>
         <div><strong>Tipo:</strong> {item.tipo}</div>
         <div><strong>CUIT:</strong> {item.cuit}</div>
@@ -29,7 +29,7 @@ export default function DetalleComprobante({ item, onClose, onMarked }: { item: 
       </div>
       <div className="mt-4 flex gap-2">
         <button onClick={mark} className="btn-primary px-3 py-1">Marcar Revisado</button>
-        <a className="px-3 py-1 border rounded" href="#" onClick={(e)=>{ e.preventDefault(); const csv = ivaService.exportCSV([item]); csv.then((c)=>{ const blob = new Blob([c], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `comprobante_${item.id}.csv`; a.click(); }) }}>Exportar CSV</a>
+        <a className="px-3 py-1 border rounded text-slate-700 dark:text-slate-200" href="#" onClick={(e)=>{ e.preventDefault(); const csv = ivaService.exportCSV([item]); csv.then((c)=>{ const blob = new Blob([c], { type: 'text/csv' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `comprobante_${item.id}.csv`; a.click(); }) }}>Exportar CSV</a>
       </div>
     </div>
   )

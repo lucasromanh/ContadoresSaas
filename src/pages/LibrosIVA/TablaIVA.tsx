@@ -21,32 +21,40 @@ type Row = {
 export default function TablaIVA({ data, onRowClick }: { data: Row[], onRowClick?: (r: Row)=>void }) {
   return (
     <div className="overflow-auto border rounded">
-      <table className="min-w-full text-sm">
-        <thead className="bg-neutral-100">
+      <table className="min-w-full text-sm text-slate-700 dark:text-slate-200">
+        <thead className="bg-neutral-100 dark:bg-slate-800">
           <tr>
-            <th className="px-2 py-1 text-left">Fecha</th>
-            <th className="px-2 py-1 text-left">Tipo</th>
-            <th className="px-2 py-1 text-left">PV</th>
-            <th className="px-2 py-1 text-left">Numero</th>
-            <th className="px-2 py-1 text-left">CUIT</th>
-            <th className="px-2 py-1 text-left">Razon</th>
-            <th className="px-2 py-1 text-right">Total</th>
-            <th className="px-2 py-1 text-left">Estado</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">Fecha</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">Tipo</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">PV</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">Numero</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">CUIT</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">Razon</th>
+            <th className="px-2 py-1 text-right text-slate-600 dark:text-slate-300">Total</th>
+            <th className="px-2 py-1 text-left text-slate-600 dark:text-slate-300">Estado</th>
           </tr>
         </thead>
         <tbody>
-          {data.map((r) => (
-            <tr onClick={()=>onRowClick && onRowClick(r)} key={r.id} className={(r.duplicado ? 'bg-red-50' : r.inconsistente ? 'bg-yellow-50' : '') + ' cursor-pointer'}>
-              <td className="px-2 py-1">{r.fecha}</td>
-              <td className="px-2 py-1">{r.tipo}</td>
-              <td className="px-2 py-1">{r.puntoVenta}</td>
-              <td className="px-2 py-1">{r.numero}</td>
-              <td className="px-2 py-1">{r.cuit}</td>
-              <td className="px-2 py-1">{r.razonSocial}</td>
-              <td className="px-2 py-1 text-right">{r.total}</td>
-              <td className="px-2 py-1">{r.duplicado ? 'Duplicado' : r.inconsistente ? 'Inconsistente' : 'OK'}</td>
-            </tr>
-          ))}
+          {data.map((r, idx) => {
+            const base = idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-950'
+            const statusBg = r.duplicado ? 'bg-red-50 dark:bg-red-900/40' : r.inconsistente ? 'bg-yellow-50 dark:bg-amber-900/30' : ''
+            return (
+              <tr
+                onClick={() => onRowClick && onRowClick(r)}
+                key={r.id}
+                className={`${base} ${statusBg} cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800`}
+              >
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.fecha}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.tipo}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.puntoVenta}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.numero}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.cuit}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.razonSocial}</td>
+                <td className="px-2 py-1 text-right text-slate-700 dark:text-slate-200">{r.total}</td>
+                <td className="px-2 py-1 text-slate-700 dark:text-slate-200">{r.duplicado ? 'Duplicado' : r.inconsistente ? 'Inconsistente' : 'OK'}</td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>
