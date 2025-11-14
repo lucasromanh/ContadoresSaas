@@ -7,6 +7,7 @@ import FiltrosVencimientos from './FiltrosVencimientos'
 import DetalleVencimientoDrawer from './DetalleVencimientoDrawer'
 import GeneradorAlertas from './GeneradorAlertas'
 import TimelineVencimientos from './TimelineVencimientos'
+import ModalDiaVencimientos from './ModalDiaVencimientos'
 import vencimientosService, { Vencimiento } from './services/vencimientosService'
 
 export default function VencimientosPage(){
@@ -14,6 +15,8 @@ export default function VencimientosPage(){
   const [filter, setFilter] = useState<any>({})
   const [selected, setSelected] = useState<Vencimiento|null>(null)
   const [showModal, setShowModal] = useState(false)
+  const [dayModal, setDayModal] = useState<{ date: string; items: Vencimiento[] } | null>(null)
+  const [alertInitialCliente, setAlertInitialCliente] = useState<string|undefined>(undefined)
 
   useEffect(()=>{
     vencimientosService.loadMock().then((d)=> setItems(d))
@@ -49,7 +52,7 @@ export default function VencimientosPage(){
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <CalendarioVencimientos items={filtered()} onEventClick={(it: Vencimiento)=>setSelected(it)} />
+            <CalendarioVencimientos items={filtered()} onEventClick={(it: Vencimiento)=>setSelected(it)} onDayClick={(date: string, items: Vencimiento[])=> setDayModal({ date, items })} />
             <div className="mt-4">
               <TimelineVencimientos items={filtered()} />
             </div>
@@ -69,7 +72,10 @@ export default function VencimientosPage(){
       </Card>
 
   {selected && <DetalleVencimientoDrawer item={selected} onClose={()=>setSelected(null)} onMark={onMark} />}
-  {showModal && <GeneradorAlertas onClose={()=>setShowModal(false)} initialCliente={filter.cliente || selected?.cliente} />}
+  {showModal && <GeneradorAlertas onClose={()=>setShowModal(false)} initialCliente={alertInitialCliente || filter.cliente || selected?.cliente} />}
+  {dayModal && <>
+    <ModalDiaVencimientos date={dayModal.date} items={dayModal.items} onClose={()=> setDayModal(null)} onMark={(id: string, estado: Vencimiento['estado'])=>{ onMark(id, estado); setDayModal(null) }} onView={(v: Vencimiento)=>{ setSelected(v); setDayModal(null) }} onSend={(cliente?: string)=>{ setAlertInitialCliente(cliente); setShowModal(true); setDayModal(null) }} />
+  </>}
     </div>
   )
 }

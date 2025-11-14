@@ -4,7 +4,7 @@ import { Vencimiento } from './services/vencimientosService'
 function startOfMonth(year:number, month:number){ return new Date(year, month, 1) }
 function daysInMonth(year:number, month:number){ return new Date(year, month+1, 0).getDate() }
 
-export default function CalendarioVencimientos({ items, onEventClick }: { items: Vencimiento[]; onEventClick?: (v:Vencimiento)=>void }){
+export default function CalendarioVencimientos({ items, onEventClick, onDayClick }: { items: Vencimiento[]; onEventClick?: (v:Vencimiento)=>void; onDayClick?: (date:string, items: Vencimiento[])=>void }){
   const now = new Date()
   const [monthOffset, setMonthOffset] = useState(0)
   const date = new Date(now.getFullYear(), now.getMonth()+monthOffset, 1)
@@ -63,7 +63,7 @@ export default function CalendarioVencimientos({ items, onEventClick }: { items:
                       <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate overflow-hidden min-w-0 text-slate-800 dark:text-slate-100 ${estadoClass}`}>{it.tipo} • {it.cliente}</div>
                     )
                   })}
-                  {dayItems.length>3 && <div className="text-xs text-slate-600 dark:text-slate-300">+{dayItems.length-3} más</div>}
+                  {dayItems.length>3 && <div onClick={()=> onDayClick && onDayClick(key, dayItems)} className="text-xs text-slate-600 dark:text-slate-300 cursor-pointer">+{dayItems.length-3} más</div>}
                 </div>
               )}
             </div>
