@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "version": "0.1.0",
-  "description": "ContadorPro - sistema profesional para estudios contables",
+  "description": "Cont(iA)dor - sistema profesional para estudios contables",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -19,7 +19,7 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-      <Card className="w-full max-w-md p-6 mx-4" title="Login - ContadorPro (placeholder)">
+      <Card className="w-full max-w-md p-6 mx-4" title="Login - Cont(iA)dor (placeholder)">
         <form onSubmit={submit} className="space-y-4">
           <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
 

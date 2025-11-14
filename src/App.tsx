@@ -11,6 +11,7 @@ import { IIBBPage } from './pages/IIBB'
 import LibrosIVAPage from './pages/LibrosIVA'
 import VencimientosPage from './pages/Vencimientos'
 import { LoginPage } from './pages/Login'
+import { HomePage } from './pages/Home'
 import { ProfilePage } from './pages/Profile'
 import { ProtectedRoute } from './router/ProtectedRoute'
 import DocumentosPage from './pages/Documentos'
@@ -23,6 +24,7 @@ import { LectorFacturasPage } from './pages/LectorFacturas/LectorFacturas'
 export default function App() {
   return (
     <Routes>
+      <Route path="/home" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route
         path="/"

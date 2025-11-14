@@ -1,6 +1,6 @@
-# ContadorPro (ContadoresSaas)
+# Cont(iA)dor (ContadoresSaas)
 
-Proyecto frontend base generado para ContadorPro — sistema profesional para estudios contables.
+Proyecto frontend base generado para Cont(iA)dor — sistema profesional para estudios contables.
 
 Stack principal:
 

@@ -32,7 +32,7 @@ export default function SidebarContent({ onNavigate }: { onNavigate?: ()=>void }
 
   return (
     <div className="flex flex-col h-full">
-      <div className="p-4 font-bold text-primary">ContadorPro</div>
+      <div className="p-4 font-bold text-primary">Cont(iA)dor</div>
 
       <div className="px-2 flex-1 overflow-auto">
         <nav className="py-2 space-y-1">
