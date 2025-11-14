@@ -2,6 +2,8 @@ import { ReciboSueldo, SueldoSummary } from '../types/reciboSueldo'
 import sueldosMock from '../mocks/sueldosMock'
 import { processFileOCR } from '../lib/ocrProcessor'
 import { parseReciboFromOCR } from '../lib/reciboParser'
+import { cleanOCRText } from '../lib/ocrClean'
+import { toStrictRecibo } from '../lib/reciboStrict'
 import alertasService from '../pages/Alertas/services/alertasService'
 
 const STORAGE = 'sueldos_store_v2'
@@ -31,13 +33,19 @@ const sueldosService = {
   // Note: this method does NOT persist the recibo; caller should confirm and call createManual to save.
   processFile: async (file: File, options?: { asociadoA?: string }) => {
     await sueldosService.load()
+    // run OCR
     const ocr = await processFileOCR(file)
-    const parsed = parseReciboFromOCR(ocr as any, { filename: file.name })
-    if ((parsed as any).error) {
-      return parsed as any
+    // clean raw text
+    const cleanedText = cleanOCRText(ocr?.text)
+    const ocrForParser = { ...(ocr || {}), text: cleanedText }
+    const parsed = parseReciboFromOCR(ocrForParser as any, { filename: file.name })
+    if ((parsed as any).error){
+      // return strict empty structure with observation
+      return toStrictRecibo({ error: (parsed as any).error })
     }
-    const recibo = parsed as any
-    return recibo
+    // normalize to strict JSON expected by frontend
+    const strict = toStrictRecibo(parsed)
+    return strict
   },
 
   // Save a parsed recibo (attach original file data url, fechaCarga and persist)
