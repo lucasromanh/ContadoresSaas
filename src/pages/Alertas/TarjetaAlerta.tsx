@@ -15,7 +15,7 @@ function iconFor(tipo: Alerta['tipo']){
 
 export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alerta: Alerta; onView?: (a:Alerta)=>void; onMark?: (id:string, estado: any)=>void; onSend?: (cliente?:string)=>void }){
   return (
-    <Card className="flex items-start gap-4">
+    <Card className="w-full flex items-start gap-4">
       <div className="p-2 rounded bg-slate-200 dark:bg-slate-700">
         {iconFor(alerta.tipo)}
       </div>
@@ -38,7 +38,7 @@ export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alert
           <Button size="sm" variant="ghost" onClick={()=> onMark && onMark(alerta.id, 'leida')}>Marcar leída</Button>
         </div>
         <div>
-          <Button size="sm" variant="default" onClick={()=> onSend && onSend(alerta.cliente)}>Recordar</Button>
+          <Button size="sm" variant="default" onClick={()=> onSend && onSend(alerta.cliente || alerta.proveedor || alerta.cuit)}>{'Recordar'}</Button>
         </div>
       </div>
     </Card>

@@ -12,7 +12,7 @@ export default function FiltrosAlertas({ onApply }:{ onApply: (f:any)=>void }){
     <div className="flex flex-wrap gap-3 items-end">
       <div>
         <label className="text-xs text-slate-500">Tipo</label>
-        <select className="block border px-2 py-1 rounded bg-slate-100" value={tipo} onChange={(e)=>setTipo(e.target.value)}>
+        <select className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700" value={tipo} onChange={(e)=>setTipo(e.target.value)}>
           <option value="">Todos</option>
           <option value="riesgo_fiscal">Riesgo fiscal</option>
           <option value="vencimiento">Vencimiento</option>
@@ -24,7 +24,7 @@ export default function FiltrosAlertas({ onApply }:{ onApply: (f:any)=>void }){
       </div>
       <div>
         <label className="text-xs text-slate-500">Criticidad</label>
-        <select className="block border px-2 py-1 rounded bg-slate-100" value={criticidad} onChange={(e)=>setCriticidad(e.target.value)}>
+        <select className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700" value={criticidad} onChange={(e)=>setCriticidad(e.target.value)}>
           <option value="">Todas</option>
           <option value="alta">Alta</option>
           <option value="media">Media</option>
@@ -33,7 +33,7 @@ export default function FiltrosAlertas({ onApply }:{ onApply: (f:any)=>void }){
       </div>
       <div>
         <label className="text-xs text-slate-500">Estado</label>
-        <select className="block border px-2 py-1 rounded bg-slate-100" value={estado} onChange={(e)=>setEstado(e.target.value)}>
+        <select className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700" value={estado} onChange={(e)=>setEstado(e.target.value)}>
           <option value="">Todos</option>
           <option value="pendiente">Pendiente</option>
           <option value="resuelta">Resuelta</option>
@@ -43,7 +43,7 @@ export default function FiltrosAlertas({ onApply }:{ onApply: (f:any)=>void }){
       </div>
       <div>
         <label className="text-xs text-slate-500">Cliente / CUIT / Proveedor</label>
-        <input className="block border px-2 py-1 rounded bg-slate-100" value={q} onChange={(e)=>setQ(e.target.value)} />
+        <input className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700" value={q} onChange={(e)=>setQ(e.target.value)} />
       </div>
       <div>
         <button onClick={aplicar} className="btn-primary px-3 py-1">Aplicar</button>

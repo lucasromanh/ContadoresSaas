@@ -27,6 +27,10 @@ export default function GeneradorAlertas({ onClose, initialCliente }: { onClose:
           <label className="text-xs">Destinatario (cliente)</label>
           <select value={destino} onChange={(e)=>setDestino(e.target.value)} className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100">
             <option value="">-- Seleccionar cliente --</option>
+            {/* If initialCliente isn't in the clients list, show it as a temporary option so the select reflects the alert's client */}
+            {initialCliente && !(clientes || []).find((c:any)=> (c.razon_social || c.nombre) === initialCliente) && (
+              <option key="_initial_" value={initialCliente}>{initialCliente} (no registrado)</option>
+            )}
             {(clientes || []).map((c:any)=> (
               <option key={c.id || c.nombre} value={c.razon_social || c.nombre}>{c.razon_social || c.nombre} {c.cuit ? `(${c.cuit})` : ''}</option>
             ))}
