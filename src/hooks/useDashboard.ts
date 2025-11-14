@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../services/axios'
 import { useAppStore } from '../store/useAppStore'
+import dashboardService from '../services/dashboardService'
 
 export const useDashboard = () => {
   return useQuery({
@@ -13,7 +14,8 @@ export const useDashboard = () => {
         margen: '$ 80.000',
         ranking: [{ name: 'Cliente A', value: '$ 10.000' }],
         estado: { año: 2025, saldo: '$ 1.200.000' },
-        alertas: ['AFIP vencido', 'Documento faltante']
+        alertas: ['AFIP vencido', 'Documento faltante'],
+        proximos: dashboardService.getProximos()
       }
 
       if (!backendOnline) {

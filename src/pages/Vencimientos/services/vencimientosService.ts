@@ -1,5 +1,8 @@
 import mockData from '../mocks/vencimientosMock'
 import riesgoService from '../../RiesgoFiscal/services/riesgoService'
+import dashboardService from '../../../services/dashboardService'
+
+const STORAGE_KEY = 'vencimientos_store_v1'
 
 export type VencimientoTipo =
   | 'ARCA' | 'RENTAS' | 'MUNICIPAL' | 'SUSS' | 'SICORE' | 'AUTONOMOS' | 'MONOTRIBUTO' | 'IIBB_LOCAL' | 'PERCEPCIONES' | 'RETENCIONES' | 'ESPECIAL' | 'PERSONALIZADO'
@@ -23,7 +26,23 @@ let store: Vencimiento[] = []
 function generateId(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8) }
 
 export async function loadMock(){
-  store = [...mockData]
+  // Try load from localStorage first (persistencia simple)
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw){
+      store = JSON.parse(raw)
+    } else {
+      store = [...mockData]
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store))
+    }
+  }catch(e){
+    store = [...mockData]
+  }
+
+  // Update dashboard upcoming list
+  const upcoming = store.slice().sort((a,b)=> a.fecha.localeCompare(b.fecha)).slice(0,6)
+  dashboardService.setProximos(upcoming)
+
   return store
 }
 
@@ -36,12 +55,19 @@ export function getByMonthYear(month: number, year: number){
 export function addVencimiento(v: Omit<Vencimiento,'id'>){
   const item: Vencimiento = { id: generateId(), ...v }
   store = [item, ...store]
+  persist()
+  // update dashboard
+  dashboardService.addProximo(item)
   return item
 }
 
 export function markAs(id: string, estado: Vencimiento['estado']){
   const it = store.find(s=>s.id===id)
   if (it) it.estado = estado
+  persist()
+  // refresh dashboard list
+  const upcoming = store.slice().sort((a,b)=> a.fecha.localeCompare(b.fecha)).slice(0,6)
+  dashboardService.setProximos(upcoming)
 }
 
 export function checkAndAlertOverdue(){
@@ -53,6 +79,14 @@ export function checkAndAlertOverdue(){
       riesgoService.addAlerta({ tipo: 'sin_documentacion', cuit: s.cuit || '', cliente: s.cliente || '', descripcion: `Vencimiento ${s.descripcion} vencido el ${s.fecha}`, criticidad: 'alta', fecha: new Date().toISOString().slice(0,10), estado: 'pendiente' })
     }
   })
+  persist()
+  // update dashboard
+  const upcoming = store.slice().sort((a,b)=> a.fecha.localeCompare(b.fecha)).slice(0,6)
+  dashboardService.setProximos(upcoming)
+}
+
+function persist(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)) }catch(e){ /* ignore storage errors */ }
 }
 
 export default { loadMock, getAll, getByMonthYear, addVencimiento, markAs, checkAndAlertOverdue }

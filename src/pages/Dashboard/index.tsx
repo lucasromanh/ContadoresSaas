@@ -98,6 +98,26 @@ export const DashboardPage: React.FC = () => {
           )}
         </Card>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <Card title="Próximos vencimientos">
+          {data?.proximos && data.proximos.length > 0 ? (
+            <ul className="space-y-2 text-sm">
+              {data.proximos.map((p: any, i: number) => (
+                <li key={i} className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{p.cliente ?? p.descripcion}</div>
+                    <div className="text-xs text-slate-500">{p.fecha} • {p.tipo}</div>
+                  </div>
+                  <div className="text-sm text-slate-600">{p.estado}</div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-sm text-slate-500">Sin vencimientos próximos</div>
+          )}
+        </Card>
+      </div>
     </div>
   )
 }
