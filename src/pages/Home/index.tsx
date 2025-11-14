@@ -40,7 +40,7 @@ export const HomePage: React.FC = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">Cont(iA)dor — tu asistente contable inteligente</h1>
+              <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">Cont(iA)dor <br /> asistente contable inteligente</h1>
               <p className="text-slate-600 dark:text-slate-300 text-lg mb-6">Automatiza la carga de comprobantes con OCR, gestiona libros IVA, procesa recibos de sueldo y visualiza reportes claros. Diseñado para contadores y pymes que quieren ahorrar tiempo y evitar errores.</p>
 
               <div className="flex gap-3 mb-6">
@@ -188,7 +188,7 @@ export const HomePage: React.FC = () => {
                   <BarChart className="w-6 h-6 text-violet-500" />
                   <div>
                     <div className="font-semibold">Integraciones y API</div>
-                    <div className="text-sm text-slate-500">Conecta con sistemas de gestión, exporta datos y automatiza flujos mediante nuestra API (próximamente).</div>
+                    <div className="text-sm text-slate-500">Conecta con sistemas de gestión, exporta datos y automatiza flujos mediante nuestra API (Acceso Limitado).</div>
                   </div>
                 </div>
               </Card>

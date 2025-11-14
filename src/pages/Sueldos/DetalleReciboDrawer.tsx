@@ -46,7 +46,19 @@ export default function DetalleReciboDrawer({ open, onClose, recibo }:{ open:boo
         )}
 
         <div className="flex justify-end gap-2">
-          <Button onClick={()=> window.open(recibo.archivoOriginalUrl || '#', '_blank')}>Ver original</Button>
+          <Button onClick={()=> {
+            const url = recibo.archivoOriginalUrl || ''
+            if (!url) return alert('No hay archivo original disponible')
+            if (typeof url === 'string' && url.startsWith('data:')){
+              window.open(url, '_blank')
+            } else if (typeof url === 'string' && url.startsWith('file:')){
+              // we stored a lightweight reference for large files instead of inlining base64
+              const name = url.replace(/^file:/,'')
+              alert('Archivo guardado como referencia: ' + name)
+            } else {
+              try{ window.open(url, '_blank') }catch(e){ alert('No se puede abrir el archivo') }
+            }
+          }}>Ver original</Button>
           <Button variant="outline" onClick={onClose}>Cerrar</Button>
         </div>
       </div>

@@ -10,6 +10,7 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
   const [processing, setProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
   const [parsed, setParsed] = useState<any|null>(null)
+  const [showFull, setShowFull] = useState(false)
 
   const handleProcess = async () => {
     if (!file) return alert('Sube un archivo primero')
@@ -28,7 +29,9 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
       setProgress(100)
       // don't close yet; show preview and let user confirm
     }catch(e){
-      alert('Error procesando archivo: '+ String(e))
+      console.error('Error procesando archivo', e)
+      const s = String(e || '')
+      alert('Error procesando archivo: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
     }finally{ setProcessing(false); setProgress(0) }
   }
 
@@ -36,11 +39,17 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
     if (!parsed) return
     try{
       setProcessing(true)
+      // log helpful debug info to console (file size, parsed structure summary)
+      try{ console.debug('Saving recibo, file:', file?.name, 'size:', file?.size, 'parsed keys:', Object.keys(parsed || {})) }catch(_){}
       const saved = await sueldosService.saveParsedRecibo(parsed, file || undefined)
       onProcessed && onProcessed(saved)
       setParsed(null)
       onClose()
-    }catch(e){ alert('Error guardando: '+ String(e)) }finally{ setProcessing(false) }
+    }catch(e){
+      console.error('Error guardando recibo', e)
+      const s = String(e || '')
+      alert('Error guardando: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
+    }finally{ setProcessing(false) }
   }
 
   return (
@@ -57,8 +66,28 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
         {processing && <div>Procesando... {progress}%</div>}
         {parsed && (
           <div className="border p-2 bg-slate-50 dark:bg-slate-800 rounded">
-            <div className="text-sm font-semibold">Previsualización del recibo</div>
-            <pre className="mt-2 p-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded max-h-64 overflow-auto text-xs">{JSON.stringify(parsed, null, 2)}</pre>
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold">Previsualización del recibo</div>
+              <div className="text-xs text-slate-500">Tamaño aproximado: {JSON.stringify(parsed || {}).length} chars</div>
+            </div>
+            <div className="mt-2">
+              {(() => {
+                const txt = JSON.stringify(parsed, null, 2) || ''
+                const limit = 2000
+                const show = showFull || txt.length <= limit
+                return (
+                  <>
+                    <pre className="p-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded max-h-64 overflow-auto text-xs">{show ? txt : txt.slice(0, limit) + '... (truncado)'}</pre>
+                    {txt.length > limit && (
+                      <div className="mt-2 flex gap-2">
+                        <Button variant="outline" onClick={() => setShowFull(s => !s)}>{showFull ? 'Ocultar' : 'Mostrar completo'}</Button>
+                        <Button variant="ghost" onClick={() => { navigator.clipboard?.writeText(txt); alert('JSON copiado al portapapeles') }}>Copiar JSON</Button>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
             <div className="flex justify-end gap-2 mt-2">
               <Button variant="outline" onClick={()=> setParsed(null)}>Editar / Cancelar</Button>
               <Button onClick={handleSave}>Confirmar y guardar</Button>

@@ -10,7 +10,21 @@ const STORAGE = 'sueldos_store_v2'
 
 let store: ReciboSueldo[] = []
 
-function persist(){ try{ localStorage.setItem(STORAGE, JSON.stringify(store)) }catch(e){} }
+// Persist store to localStorage. If full serialization fails (quota / huge data URLs),
+// retry saving a trimmed copy without binary fields to avoid quota errors.
+function persist(){
+  try{
+    localStorage.setItem(STORAGE, JSON.stringify(store))
+    return
+  }catch(e){
+    try{
+      const trimmed = store.map(s => ({ ...s, archivoOriginalUrl: undefined }))
+      localStorage.setItem(STORAGE, JSON.stringify(trimmed))
+    }catch(_){
+      // swallow: avoid throwing to UI
+    }
+  }
+}
 
 const delay = (ms = 300) => new Promise((r) => setTimeout(r, ms))
 
@@ -83,8 +97,21 @@ const sueldosService = {
 
     if (file){
       const read = new FileReader()
-      const dataUrl: Promise<string> = new Promise((res)=>{ read.onload = ()=> res(String(read.result)); read.readAsDataURL(file) })
-      internal.archivoOriginalUrl = await dataUrl
+      // Avoid inlining very large files as base64 in localStorage. Inline only when reasonably small.
+      const MAX_INLINE_BYTES = 2 * 1024 * 1024 // 2MB
+      if (file.size && file.size < MAX_INLINE_BYTES){
+        const dataUrl: Promise<string> = new Promise((res, rej)=>{ read.onload = ()=> res(String(read.result)); read.onerror = rej; read.readAsDataURL(file) })
+        try{
+          internal.archivoOriginalUrl = await dataUrl
+        }catch(e){
+          internal.archivoOriginalUrl = `file:${file.name}`
+        }
+      } else {
+        // large file: store lightweight reference (filename) instead of full base64
+        internal.archivoOriginalUrl = `file:${file.name}`
+      }
+      // ensure metadata contains filename
+      internal.metadata = { ...(internal.metadata || {}), nombreArchivo: file.name }
     }
 
     store = [internal, ...store]
