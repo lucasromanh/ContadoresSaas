@@ -12,7 +12,7 @@ export default function TarjetaVencimiento({ item, onView, onSend }: { item: Ven
           <div className="text-sm text-slate-500">{item.tipo} • {item.organismo}</div>
           <div className="font-semibold">{item.descripcion}</div>
           <div className="text-xs text-slate-500">{item.cliente} — {item.cuit}</div>
-          <div className="text-sm mt-2">{item.fecha} • <span className="px-2 py-0.5 rounded text-white" style={{backgroundColor: color}}> {item.criticidad}</span></div>
+          <div className="text-sm mt-2">{item.fecha} • <span className={`px-2 py-0.5 rounded text-white ${color}`}> {item.criticidad}</span></div>
         </div>
         <div className="flex flex-col gap-2">
           <button onClick={onView} className="text-sm text-primary">Ver detalle</button>

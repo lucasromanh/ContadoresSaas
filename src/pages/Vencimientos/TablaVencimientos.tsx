@@ -18,7 +18,7 @@ export default function TablaVencimientos({ items, onViewDetail, onMark }: { ite
   return (
     <div className="overflow-auto border rounded">
       <table className="min-w-full text-sm">
-        <thead className="bg-neutral-100 dark:bg-slate-800">
+        <thead className="bg-slate-50 dark:bg-slate-800">
           <tr>
             <th className="px-2 py-1 text-left">Fecha</th>
             <th className="px-2 py-1 text-left">Tipo</th>

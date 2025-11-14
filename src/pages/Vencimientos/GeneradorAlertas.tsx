@@ -21,11 +21,11 @@ export default function GeneradorAlertas({ onClose, initialCliente }: { onClose:
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-slate-800 p-4 rounded w-96 text-slate-800 dark:text-slate-200">
+  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded w-96 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">
         <h3 className="font-semibold mb-2">Enviar recordatorio</h3>
         <div className="mb-2">
           <label className="text-xs">Destinatario (cliente)</label>
-          <select value={destino} onChange={(e)=>setDestino(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white dark:bg-slate-700 dark:text-slate-100">
+          <select value={destino} onChange={(e)=>setDestino(e.target.value)} className="block w-full border px-2 py-1 rounded bg-slate-50 dark:bg-slate-700 dark:text-slate-100">
             <option value="">-- Seleccionar cliente --</option>
             {(clientes || []).map((c:any)=> (
               <option key={c.id || c.nombre} value={c.razon_social || c.nombre}>{c.razon_social || c.nombre} {c.cuit ? `(${c.cuit})` : ''}</option>
@@ -34,7 +34,7 @@ export default function GeneradorAlertas({ onClose, initialCliente }: { onClose:
         </div>
         <div className="mb-2">
           <label className="text-xs">Canal</label>
-          <select value={canal} onChange={(e)=>setCanal(e.target.value as any)} className="block w-full border px-2 py-1 rounded bg-white dark:bg-slate-700 dark:text-slate-100">
+          <select value={canal} onChange={(e)=>setCanal(e.target.value as any)} className="block w-full border px-2 py-1 rounded bg-slate-50 dark:bg-slate-700 dark:text-slate-100">
             <option value="whatsapp">WhatsApp</option>
             <option value="email">Email</option>
             <option value="interna">Notificación interna</option>
@@ -42,7 +42,7 @@ export default function GeneradorAlertas({ onClose, initialCliente }: { onClose:
         </div>
         <div>
           <label className="text-xs">Mensaje</label>
-          <textarea value={mensaje} onChange={(e)=>setMensaje(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white dark:bg-slate-700 dark:text-slate-100" rows={5} placeholder="Hola {cliente}, te recordamos que..." />
+          <textarea value={mensaje} onChange={(e)=>setMensaje(e.target.value)} className="block w-full border px-2 py-1 rounded bg-slate-50 dark:bg-slate-700 dark:text-slate-100" rows={5} placeholder="Hola {cliente}, te recordamos que..." />
         </div>
         <div className="mt-3 flex justify-end gap-2">
           <button onClick={onClose} className="px-3 py-1 border rounded">Cancelar</button>

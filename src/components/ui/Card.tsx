@@ -3,8 +3,8 @@ import { cn } from '../../lib/utils'
 
 export const Card: React.FC<{ title?: string; children?: React.ReactNode; className?: string }> = ({ title, children, className = '' }) => {
   return (
-    <div className={cn('bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm p-4 text-slate-900 dark:text-slate-100', className)}>
-      {title && <div className="font-semibold mb-3 text-slate-700 dark:text-slate-200">{title}</div>}
+    <div className={cn('bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-sm p-4 text-slate-900 dark:text-slate-100', className)}>
+      {title && <div className="font-semibold mb-3 text-slate-800 dark:text-slate-200">{title}</div>}
       <div>{children}</div>
     </div>
   )
