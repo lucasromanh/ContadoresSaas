@@ -11,6 +11,7 @@ import { IIBBPage } from './pages/IIBB'
 import { LibrosIVAPage } from './pages/LibrosIVA'
 import { VencimientosPage } from './pages/Vencimientos'
 import { LoginPage } from './pages/Login'
+import { ProfilePage } from './pages/Profile'
 
 function ProtectedRoute({ children, roles }: { children: JSX.Element; roles?: string[] }) {
   const user = useUserStore((s) => s.user)
@@ -35,6 +36,7 @@ export default function App() {
         <Route path="riesgo-fiscal" element={<RiesgoFiscalPage />} />
         <Route path="clientes" element={<ClientesPage />} />
         <Route path="proveedores" element={<ProveedoresPage />} />
+  <Route path="profile" element={<ProfilePage />} />
         <Route path="sueldos" element={<SueldosPage />} />
         <Route path="iibb" element={<IIBBPage />} />
         <Route path="libros-iva" element={<LibrosIVAPage />} />

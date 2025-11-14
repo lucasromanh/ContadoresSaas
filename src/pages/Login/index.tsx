@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store/useUserStore'
+import { Card } from '../../components/ui/Card'
+import { Input } from '../../components/ui/Input'
+import { Button } from '../../components/ui/Button'
 
 export const LoginPage: React.FC = () => {
   const [name, setName] = useState('')
@@ -15,17 +18,27 @@ export const LoginPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <form onSubmit={submit} className="w-full max-w-md p-6 bg-white border rounded space-y-4">
-        <h2 className="text-xl font-semibold">Login - ContadorPro (placeholder)</h2>
-        <input className="w-full p-2 border rounded" placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-        <select className="w-full p-2 border rounded" value={role} onChange={(e) => setRole(e.target.value as any)}>
-          <option value="admin">Admin</option>
-          <option value="contador">Contador</option>
-          <option value="cliente">Cliente</option>
-        </select>
-        <button className="w-full bg-primary text-white p-2 rounded">Entrar</button>
-      </form>
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 dark:bg-slate-900">
+      <Card className="w-full max-w-md p-6" title="Login - ContadorPro (placeholder)">
+        <form onSubmit={submit} className="space-y-4">
+          <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
+
+          <div>
+            <label className="sr-only">Rol</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as any)}
+              className="w-full rounded-md border px-3 py-2 bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100"
+            >
+              <option value="admin">Admin</option>
+              <option value="contador">Contador</option>
+              <option value="cliente">Cliente</option>
+            </select>
+          </div>
+
+          <Button type="submit" className="w-full">Entrar</Button>
+        </form>
+      </Card>
     </div>
   )
 }
