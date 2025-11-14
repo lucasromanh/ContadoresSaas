@@ -4,11 +4,12 @@ import { AlertaFiscal } from '../services/riesgoService'
 import { Button } from '../../../components/ui/Button'
 import iibbService from '../../../services/iibbService'
 import documentosService from '../../../services/documentosService'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 export const RiskDetailDrawer: React.FC<{ alerta: AlertaFiscal | null; onClose: () => void; onResolve?: (id: string) => Promise<void> }> = ({ alerta, onClose, onResolve }) => {
   const [iibb, setIibb] = useState<any[]>([])
   const [docs, setDocs] = useState<any[]>([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (!alerta) return
@@ -17,7 +18,7 @@ export const RiskDetailDrawer: React.FC<{ alerta: AlertaFiscal | null; onClose: 
     setIibb(related)
 
     documentosService.listDocuments().then((list: any[]) => {
-      const matched = list.filter((d) => (d.meta?.emisor?.cuit === alerta.cuit) || (d.meta?.receptor?.cuit === alerta.cuit))
+      const matched = list.filter((d) => (d.meta?.emisor?.cuit === alerta.cuit) || (d.meta?.receptor?.cuit === alerta.cuit) || (d.meta?.cliente?.cuit === alerta.cuit))
       setDocs(matched)
     }).catch(() => setDocs([]))
   }, [alerta])
@@ -45,7 +46,7 @@ export const RiskDetailDrawer: React.FC<{ alerta: AlertaFiscal | null; onClose: 
                 <strong>Documentos guardados:</strong>
                 <ul className="list-disc list-inside">
                   {docs.map((d) => (
-                    <li key={d.id}><Link to="/documentos" className="text-primary">{d.name}</Link> • {new Date(d.createdAt).toLocaleString()}</li>
+                    <li key={d.id}><a href="#" onClick={(e)=>{ e.preventDefault(); try { navigate(`/documentos?clientCuit=${encodeURIComponent(alerta.cuit)}&clientName=${encodeURIComponent(alerta.cliente)}`) } catch (err) { window.open('/documentos', '_blank') } }} className="text-primary">{d.name}</a> • {new Date(d.createdAt).toLocaleString()}</li>
                   ))}
                 </ul>
               </div>
@@ -67,13 +68,31 @@ export const RiskDetailDrawer: React.FC<{ alerta: AlertaFiscal | null; onClose: 
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="default" onClick={() => onResolve && onResolve(alerta.id)}>Marcar como resuelta</Button>
-          <Button variant="ghost" onClick={() => { window.open(`https://wa.me/549${alerta.cuit.replace(/[^0-9]/g, '')}`, '_blank') }}>Contactar (WhatsApp)</Button>
-          <Button variant="outline" onClick={() => { window.open('/documentos', '_blank') }}>Abrir carpeta documental</Button>
-        </div>
+        <DetailActions alerta={alerta} onResolve={onResolve} onClose={onClose} />
       </div>
     </Sheet>
+  )
+}
+
+const DetailActions: React.FC<{ alerta: AlertaFiscal; onResolve?: (id: string) => Promise<void>; onClose: () => void }> = ({ alerta, onResolve, onClose }) => {
+  const navigate = useNavigate()
+
+  const openDocumentFolder = () => {
+    // navigate in-app so we keep in-memory auth state
+    try {
+      navigate(`/documentos?clientCuit=${encodeURIComponent(alerta.cuit)}&clientName=${encodeURIComponent(alerta.cliente)}`)
+    } catch (e) {
+      // fallback to full open
+      window.open('/documentos', '_blank')
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="default" onClick={() => onResolve && onResolve(alerta.id)}>Marcar como resuelta</Button>
+      <Button variant="ghost" onClick={() => { window.open(`https://wa.me/549${alerta.cuit.replace(/[^0-9]/g, '')}`, '_blank') }}>Contactar (WhatsApp)</Button>
+      <Button variant="outline" onClick={openDocumentFolder}>Abrir carpeta documental</Button>
+    </div>
   )
 }
 

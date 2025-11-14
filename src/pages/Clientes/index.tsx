@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card } from '../../components/ui/Card'
 import SmartTable from '../../components/ui/SmartTable'
 import { Dialog } from '../../components/ui/Dialog'
@@ -59,6 +60,26 @@ const EditClienteForm: React.FC<{ initial: any; onSave: (d: any) => void; onCanc
         <Button onClick={onCancel}>Cancelar</Button>
       </div>
     </Form>
+  )
+}
+
+const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (c:any)=>void; onDelete: (id:string)=>void }> = ({ data, onView, onEdit, onDelete }) => {
+  const navigate = useNavigate()
+  return (
+    <div className="mt-3 flex gap-2">
+      {data.map((c) => (
+        <div key={c.id} className="p-2 border rounded w-full">
+          <div className="font-medium">{c.razon_social}</div>
+          <div className="text-sm text-slate-500">{c.cuit}</div>
+          <div className="mt-2 flex gap-2">
+            <Button onClick={() => onView(c.id)}>Ver</Button>
+            <Button onClick={() => onEdit(c)}>Editar</Button>
+            <Button onClick={() => onDelete(c.id)}>Eliminar</Button>
+            <Button onClick={() => navigate(`/documentos?clientId=${c.id}&clientName=${encodeURIComponent(c.razon_social || c.nombre)}`)}>Carpeta documental</Button>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -130,19 +151,7 @@ export const ClientesPage: React.FC = () => {
           searchKeys={['razon_social', 'cuit']}
           stateKey={'estado'}
         />
-        <div className="mt-3 flex gap-2">
-          {data.slice(0, 5).map((c) => (
-            <div key={c.id} className="p-2 border rounded w-full">
-              <div className="font-medium">{c.razon_social}</div>
-              <div className="text-sm text-slate-500">{c.cuit}</div>
-                <div className="mt-2 flex gap-2">
-                <Button onClick={() => setDetailId(c.id)}>Ver</Button>
-                <Button onClick={() => setEditing(c)}>Editar</Button>
-                <Button onClick={() => handleDelete(c.id)}>Eliminar</Button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ClientCards data={data.slice(0,5)} onView={(id)=>setDetailId(id)} onEdit={(c)=>setEditing(c)} onDelete={(id)=>handleDelete(id)} />
       </Card>
 
       <Dialog open={openNew} onOpenChange={setOpenNew} title="Crear cliente">

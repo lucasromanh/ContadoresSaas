@@ -28,7 +28,7 @@ const RiskFilters: React.FC<{ onFilter: (f: any) => void }> = ({ onFilter }) => 
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Buscar..."
-        className="border rounded px-2 py-1 flex-1"
+        className="border rounded px-2 py-1 flex-1 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-700"
       />
       <button type="submit" className="px-3 py-1 bg-sky-500 text-white rounded">Filtrar</button>
     </form>
