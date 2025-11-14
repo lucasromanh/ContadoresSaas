@@ -1,11 +1,10 @@
 // ------------------------------------------------------
-// OCR Processor compatible con Vite + TS + pdf.js 4.x + Tesseract.js v5
+// OCR Processor – pdf.js 4.x + Tesseract.js v5 (API correcta)
 // ------------------------------------------------------
 
 import * as pdfjsLib from "pdfjs-dist";
 import { preprocessImageFileToDataUrl } from "./imagePreprocess";
 
-// 👇 NUEVO Worker compatible con Vite + pdf.js 4.x
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
@@ -40,40 +39,86 @@ function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 }
 
 // ------------------------------------------------------
-// 1) OCR REAL PARA PDF → pdf.js extraction
+// OCR PARA PDF → Renderizar página y pasarla por Tesseract
 // ------------------------------------------------------
 async function extractTextFromPdf(file: File): Promise<OCRResult> {
   const buffer = await readFileAsArrayBuffer(file);
-
   const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-  let full = "";
-  const pages: string[] = [];
+  const pagesText: string[] = [];
+  const allWords: any[] = [];
+
+  // Tesseract v5
+  const { createWorker } = await import("tesseract.js");
+
+  // OEM = 1 (LSTM_ONLY)
+  const worker: any = await createWorker("spa", 1);
+
+  // Logging correcto
+  worker.setLogger((m: any) => console.log("Tesseract:", m));
+
+  await worker.setParameters({
+    preserve_interword_spaces: "1",
+    tessedit_pageseg_mode: "6",
+    tessedit_char_blacklist: "|•—–=“”¡!•<>[]{}",
+    tessedit_char_whitelist:
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.,:/()áéíóúÁÉÍÓÚñÑ %"
+  });
 
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
+    const viewport = page.getViewport({ scale: 2 });
 
-    const pageText = textContent.items
-      .map((it: any) => it.str || it.text || "")
-      .join(" ");
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
 
-    pages.push(pageText);
-    full += pageText + "\n";
+    const ctx = canvas.getContext("2d")!;
+
+    await page.render({
+      canvasContext: ctx,
+      viewport,
+      canvas
+    }).promise;
+
+    const dataUrl = canvas.toDataURL("image/png");
+
+    const { data } = await worker.recognize(dataUrl);
+
+    const text = (data.text || "").replace(/\s+/g, " ").trim();
+    pagesText.push(text);
+
+    if (Array.isArray((data as any)?.words)) {
+      for (const wr of (data as any).words) {
+        allWords.push({
+          text: wr.text || "",
+          bbox: {
+            x0: wr.bbox.x0,
+            y0: wr.bbox.y0,
+            x1: wr.bbox.x1,
+            y1: wr.bbox.y1
+          }
+        });
+      }
+    }
   }
 
+  await worker.terminate();
+
   return {
-    text: full.replace(/\s+/g, " ").trim(),
-    pages
+    text: pagesText.join("\n").trim(),
+    pages: pagesText,
+    words: allWords
   };
 }
 
 // ------------------------------------------------------
-// 2) OCR PARA IMÁGENES → Tesseract.js
+// OCR PARA IMAGEN
 // ------------------------------------------------------
 async function ocrImage(file: File): Promise<OCRResult> {
-  const t = await import("tesseract.js");
+  const { createWorker } = await import("tesseract.js");
 
+  // Leer imagen
   let dataUrl = await readFileAsDataURL(file);
 
   try {
@@ -82,23 +127,34 @@ async function ocrImage(file: File): Promise<OCRResult> {
     }
   } catch {}
 
-  const worker: any = await t.createWorker();
+  // Crear worker correctamente (sin configs extra)
+  const worker: any = await createWorker("spa", 1);
 
-  await worker.load();
-  await worker.loadLanguage("spa").catch(() => worker.loadLanguage("eng"));
-  await worker.initialize("spa").catch(() => worker.initialize("eng"));
-  await worker.setParameters({ tessedit_pageseg_mode: 1 });
+  // Logger compatible con TS
+  worker.setLogger((m: any) => console.log("OCR IMG:", m));
 
+  // Parámetros recomendados
+  await worker.setParameters({
+    preserve_interword_spaces: "1",
+    tessedit_pageseg_mode: "6",
+    tessedit_char_blacklist: "|•—–=“”¡!•<>[]{}",
+    tessedit_char_whitelist:
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-.,:/()áéíóúÁÉÍÓÚñÑ %"
+  });
+
+  // Ejecutar OCR
   const { data } = await worker.recognize(dataUrl);
+
   await worker.terminate();
 
-  const text = (data?.text || "").replace(/\s+/g, " ").trim();
+  // Texto limpio
+  const text = (data.text || "").replace(/\s+/g, " ").trim();
 
-  const w = data as any;
+  // Words con bounding boxes
   const words: any[] = [];
 
-  if (Array.isArray(w?.words)) {
-    for (const wr of w.words) {
+  if (Array.isArray((data as any)?.words)) {
+    for (const wr of (data as any).words) {
       words.push({
         text: wr.text || "",
         bbox: {
@@ -118,8 +174,9 @@ async function ocrImage(file: File): Promise<OCRResult> {
   };
 }
 
+
 // ------------------------------------------------------
-// 3) Fallback
+// Fallback
 // ------------------------------------------------------
 async function fallbackText(file: File): Promise<OCRResult> {
   return new Promise((res) => {
@@ -140,8 +197,7 @@ async function fallbackText(file: File): Promise<OCRResult> {
 // FUNCIÓN PRINCIPAL
 // ------------------------------------------------------
 export async function processFileOCR(file: File): Promise<OCRResult> {
-  // PDF
-  if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+  if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
     try {
       const pdf = await extractTextFromPdf(file);
       if (pdf.text.length > 20) return pdf;
@@ -150,7 +206,6 @@ export async function processFileOCR(file: File): Promise<OCRResult> {
     }
   }
 
-  // Imagen
   if (file.type.startsWith("image/")) {
     try {
       return await ocrImage(file);

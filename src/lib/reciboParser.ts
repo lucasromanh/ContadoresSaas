@@ -22,39 +22,50 @@ type OCRResult = {
 // Agrupar líneas por Y
 // --------------------------
 function buildLines(ocr: OCRResult): string[] {
-  if (!ocr.words?.length)
-    return (ocr.text || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (!ocr.words?.length) {
+    return (ocr.text || "")
+      .split(/\r?\n/)
+      .map(l => l.trim())
+      .filter(Boolean);
+  }
 
-  const linesMap: Array<{
-    y: number;
-    words: Array<{ text: string; x: number }>;
-  }> = [];
+  const words = [...ocr.words]
+    .sort((a,b) => (a.bbox.y0 + a.bbox.y1)/2 - (b.bbox.y0 + b.bbox.y1)/2);
+
+  const linesMap: Array<{ y: number; words: Array<{ text: string; x: number }> }> = [];
 
   const clean = (s: string) =>
     s
-      .replace(/[^\x20-\x7E\u00A0-\uFFFF]+/g, " ")
-      .replace(/[^\p{L}\p{N}]+/gu, " ")
+      .replace(/[^\p{L}\p{N}\.,:\/\-\(\)áéíóúÁÉÍÓÚñÑ ]+/gu, " ")
       .replace(/\s+/g, " ")
       .trim();
 
-  for (const w of ocr.words) {
+  for (const w of words) {
     const cy = (w.bbox.y0 + w.bbox.y1) / 2;
     const text = clean(w.text);
     if (!text) continue;
 
-    let group = linesMap.find((l) => Math.abs(l.y - cy) < 8);
+    let group = linesMap.find(l => Math.abs(l.y - cy) < 18);
     if (!group) {
       group = { y: cy, words: [] };
       linesMap.push(group);
     }
+
     group.words.push({ text, x: w.bbox.x0 });
   }
 
   return linesMap
-    .sort((a, b) => a.y - b.y)
-    .map((l) => l.words.sort((a, b) => a.x - b.x).map((w) => w.text).join(" "))
+    .sort((a,b)=>a.y - b.y)
+    .map(l =>
+      l.words
+        .sort((a,b)=>a.x - b.x)
+        .map(w => w.text)
+        .join(" ")
+    )
     .filter(Boolean);
 }
+
+
 
 // ==================================================
 // PARSER PRINCIPAL type-safe
