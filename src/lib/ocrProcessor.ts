@@ -1,150 +1,161 @@
-// OCR processor with optional Tesseract.js integration.
-// Si tesseract.js está disponible, se usa. Si no, se hace un fallback seguro SIN basura binaria.
-import { pdfToImages } from './pdfToImages';
+// ------------------------------------------------------
+// OCR Processor compatible con Vite + TS + pdf.js 3.x + Tesseract.js v5
+// ------------------------------------------------------
 
-export async function processFileOCR(file: File): Promise<{ text: string; pages?: string[]; words?: any[] }> {
-  // Construimos array de páginas (dataURLs). Si es PDF, convertimos cada página a imagen.
-  let pages: string[] = [];
+import * as pdfjsLib from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
+import { preprocessImageFileToDataUrl } from "./imagePreprocess";
 
-  try {
-    if (file.type === 'application/pdf') {
-      try {
-        pages = await pdfToImages(file);
-      } catch (err) {
-        return { text: '', pages: [], error: 'No se pudo leer el PDF' } as any;
-      }
-    } else if (file.type && file.type.startsWith('image/') && typeof window !== 'undefined') {
-      try {
-        const ip = await import('./imagePreprocess');
-        const dataUrl = await ip.preprocessImageFileToDataUrl(file as any);
-        pages = [dataUrl];
-      } catch (e) {
-        const dataUrl = await new Promise<string>((res, rej) => {
-          const r = new FileReader();
-          r.onload = () => res(String(r.result));
-          r.onerror = rej;
-          r.readAsDataURL(file);
-        });
-        pages = [dataUrl];
-      }
-    } else {
-      // Otros tipos: intentamos leer como dataURL (puede ser un PNG/JPEG sin MIME) o fallback
-      const dataUrl = await new Promise<string>((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(String(r.result));
-        r.onerror = rej;
-        try {
-          r.readAsDataURL(file);
-        } catch (e) {
-          rej(e);
-        }
-      });
-      pages = [dataUrl];
-    }
-  } catch (e) {
-    // si algo falla al obtener páginas, hacemos fallback
-    const fallback = `OCR_FALLBACK ${file.name}`;
-    return { text: fallback, pages: [fallback] } as any;
-  }
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
-  // Intentamos usar Tesseract si está disponible
-  try {
-    const t = await import('tesseract.js');
+export type OCRResult = {
+  text: string;
+  pages?: string[];
+  words?: Array<{
+    text: string;
+    bbox: { x0: number; y0: number; x1: number; y1: number };
+  }>;
+};
 
-    if (t && (t as any).createWorker) {
-      const worker: any = await (t.createWorker as any)();
-
-      await worker.load();
-      await worker.loadLanguage('spa').catch(() => worker.loadLanguage('eng'));
-      await worker.initialize('spa').catch(() => worker.initialize('eng'));
-
-      try {
-        await worker.setParameters({ tessedit_pageseg_mode: '1' });
-      } catch (e) {}
-
-      let fullText = '';
-      const allWords: any[] = [];
-
-      for (const pageImg of pages) {
-        try {
-          const { data } = await worker.recognize(pageImg);
-          fullText += '\n' + (data && data.text ? String(data.text) : '');
-
-          if (data && Array.isArray(data.words)) {
-            for (const w of data.words) {
-              allWords.push({
-                text: String(w.text || ''),
-                bbox: {
-                  x0: w.bbox?.x0 ?? w.x0 ?? 0,
-                  y0: w.bbox?.y0 ?? w.y0 ?? 0,
-                  x1: w.bbox?.x1 ?? w.x1 ?? 0,
-                  y1: w.bbox?.y1 ?? w.y1 ?? 0,
-                },
-              });
-            }
-          }
-        } catch (e) {
-          // si una página falla, seguimos con la siguiente
-        }
-      }
-
-      await worker.terminate();
-
-      const normalized = cleanOcrText(fullText);
-
-      return { text: normalized, pages, ...(allWords.length ? { words: allWords } : {}) };
-    }
-  } catch (e) {
-    // tesseract no disponible -> pasamos al fallback
-  }
-
-  // Fallback seguro: si el archivo parece texto, lo leemos como texto
-  const isProbablyText = !file.type || /^text\//.test(file.type) || /application\/(json|xml)/.test(file.type);
-
-  if (isProbablyText) {
-    const readAsText = (): Promise<string> =>
-      new Promise((res) => {
-        const r = new FileReader();
-        r.onload = () => {
-          res(String(r.result || `Contenido de ${file.name}`));
-        };
-        r.onerror = () => {
-          res(`Contenido de ${file.name}`);
-        };
-        try {
-          r.readAsText(file);
-        } catch (e) {
-          res(`Contenido de ${file.name}`);
-        }
-      });
-
-    const txt = await readAsText();
-    const normalized = cleanOcrText(txt);
-    return { text: normalized, pages: [normalized] };
-  }
-
-  // Si es imagen/PDF y no hay OCR real disponible, NO devolvemos basura binaria.
-  const fallback = `OCR_FALLBACK ${file.name}`;
-  return { text: fallback, pages: [fallback] };
+// ----------------------------
+// Helpers
+// ----------------------------
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result));
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
 }
 
-// 🔹 Utilidad: limpiar texto corrupto (líneas con demasiados símbolos raros)
-function cleanOcrText(text: string): string {
-  const lines = (text || '').split(/\r?\n/);
+function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result as ArrayBuffer);
+    r.onerror = rej;
+    r.readAsArrayBuffer(file);
+  });
+}
 
-  const isCorruptLine = (l: string) => {
-    const cleaned = l.replace(/\s/g, '');
-    if (!cleaned) return true;
-    // permitimos letras, números, acentos, puntuación básica
-    const allowed = cleaned.replace(/[\wÁÉÍÓÚÑáéíóúñ.,;:$\-\/]/g, '');
-    const ratio = allowed.length / cleaned.length;
-    // si más del 40% son caracteres raros, consideramos que la línea está corrupta
-    return ratio > 0.4;
-  };
+// ------------------------------------------------------
+// 1) PDF OCR mediante extracción real pdf.js
+// ------------------------------------------------------
+async function extractTextFromPdf(file: File): Promise<OCRResult> {
+  const buffer = await readFileAsArrayBuffer(file);
 
-  const filtered = lines.map((l) => l.trim()).filter((l) => l && !isCorruptLine(l));
+  const loadingTask = pdfjsLib.getDocument({ data: buffer });
+  const pdf = await loadingTask.promise;
 
-  return filtered.join('\n').replace(/\s+$/g, '').trim();
+  let full = "";
+  const pages: string[] = [];
+
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const textContent = await page.getTextContent();
+    const pageText = textContent.items
+      .map((it: any) => it.str || it.text || "")
+      .join(" ");
+
+    pages.push(pageText);
+    full += pageText + "\n";
+  }
+
+  const normalized = full.replace(/\s+/g, " ").trim();
+  return { text: normalized, pages };
+}
+
+// ------------------------------------------------------
+// 2) Tesseract OCR para imágenes
+// ------------------------------------------------------
+async function ocrImage(file: File): Promise<OCRResult> {
+  const t = await import("tesseract.js");
+
+  let dataUrl = await readFileAsDataURL(file);
+
+  // Preprocesado OpenCV-lite
+  try {
+    if (file.type.startsWith("image/")) {
+      dataUrl = await preprocessImageFileToDataUrl(file);
+    }
+  } catch {}
+
+  // Worker casteado a any para evitar errores TS
+  const worker: any = await t.createWorker();
+
+  await worker.load();
+  await worker.loadLanguage("spa").catch(() => worker.loadLanguage("eng"));
+  await worker.initialize("spa").catch(() => worker.initialize("eng"));
+
+  await worker.setParameters({ tessedit_pageseg_mode: 1 });
+
+  const { data } = await worker.recognize(dataUrl);
+  await worker.terminate();
+
+  const text = (data?.text || "").replace(/\s+/g, " ").trim();
+
+  const d: any = data;
+  const words: any[] = [];
+
+  if (Array.isArray(d?.words)) {
+    for (const w of d.words) {
+      words.push({
+        text: w.text || "",
+        bbox: {
+          x0: w.bbox?.x0 ?? 0,
+          y0: w.bbox?.y0 ?? 0,
+          x1: w.bbox?.x1 ?? 0,
+          y1: w.bbox?.y1 ?? 0
+        }
+      });
+    }
+  }
+
+  return { text, pages: [text], ...(words.length ? { words } : {}) };
+}
+
+// ------------------------------------------------------
+// 3) Fallback
+// ------------------------------------------------------
+async function fallbackText(file: File): Promise<OCRResult> {
+  return new Promise((res) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const txt = String(r.result || "");
+      res({
+        text: txt.replace(/\s+/g, " ").trim(),
+        pages: [txt]
+      });
+    };
+    r.onerror = () => res({ text: "", pages: [] });
+    r.readAsText(file);
+  });
+}
+
+// ------------------------------------------------------
+// FUNCIÓN PRINCIPAL
+// ------------------------------------------------------
+export async function processFileOCR(file: File): Promise<OCRResult> {
+  if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+    try {
+      const pdf = await extractTextFromPdf(file);
+      if (pdf.text && pdf.text.length > 20) {
+        return pdf;
+      }
+    } catch (e) {
+      console.error("Error PDF:", e);
+    }
+  }
+
+  if (file.type.startsWith("image/")) {
+    try {
+      return await ocrImage(file);
+    } catch (e) {
+      console.error("Error OCR Imagen:", e);
+    }
+  }
+
+  return await fallbackText(file);
 }
 
 export default { processFileOCR };
