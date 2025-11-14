@@ -8,8 +8,14 @@ html, body, #root {
 
 body {
   @apply bg-white text-slate-900 antialiased dark:bg-slate-900 dark:text-slate-100;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
 .app-shell {
   @apply min-h-screen flex;
+}
+
+/* shadcn-like utility helpers */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }

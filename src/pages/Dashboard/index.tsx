@@ -3,6 +3,7 @@ import { Card } from '../../components/ui/Card'
 import { RechartsChart } from '../../components/charts/RechartsChart'
 import { TremorChart } from '../../components/charts/TremorChart'
 import { useDashboard } from '../../hooks/useDashboard'
+import { useAppStore } from '../../store/useAppStore'
 
 function StatCard({ title, value }: { title: string; value: string }) {
   return (
@@ -16,6 +17,7 @@ function StatCard({ title, value }: { title: string; value: string }) {
 
 export const DashboardPage: React.FC = () => {
   const { data, isLoading, error } = useDashboard()
+  const isBackendOnline = useAppStore((s) => s.backendOnline)
 
   if (isLoading) return <div>Cargando dashboard...</div>
   if (error) return <div>Error cargando dashboard</div>
@@ -30,6 +32,11 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {!isBackendOnline && (
+        <div className="p-3 rounded-md bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 border border-amber-200 dark:border-amber-700">
+          Backend no disponible — mostrando datos de ejemplo (mock)
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard title="Ingresos" value={ingresos} />
         <StatCard title="Costos" value={costos} />
