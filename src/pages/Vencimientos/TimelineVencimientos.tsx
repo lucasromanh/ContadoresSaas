@@ -18,18 +18,18 @@ export default function TimelineVencimientos({ items }: { items: Vencimiento[] }
           const dayItems = items.filter(it => it.fecha === key)
           return (
             <div key={key} className="p-2 border rounded min-h-[120px] bg-white/5 dark:bg-slate-900">
-              <div className="text-sm font-semibold">{d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
+              <div className="text-sm font-semibold text-slate-200 dark:text-slate-100">{d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
               <div className="mt-2 space-y-2">
                 {dayItems.map(it => {
                   const dotClass = it.criticidad==='alta'?'bg-red-500': it.criticidad==='media'?'bg-amber-400':'bg-emerald-400'
-                  const descClass = it.estado === 'pagado' ? 'text-emerald-300 line-through opacity-80' : it.estado === 'presentado' ? 'text-slate-400' : it.estado === 'vencido' ? 'text-red-400' : ''
+                  const descClass = it.estado === 'pagado' ? 'text-emerald-400 dark:text-emerald-300 line-through opacity-90' : it.estado === 'presentado' ? 'text-slate-400 dark:text-slate-300' : it.estado === 'vencido' ? 'text-red-400 dark:text-red-300' : 'text-slate-900 dark:text-slate-100'
                   return (
                     <div key={it.id} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className={`w-2 h-2 rounded-full ${dotClass}`}></div>
-                        <div className="truncate max-w-[120px] min-w-0 overflow-hidden">{it.descripcion}</div>
+                        <div className="truncate max-w-[120px] min-w-0 overflow-hidden text-slate-900 dark:text-slate-100">{it.descripcion}</div>
                       </div>
-                      <div className={`text-xs text-slate-500 ${descClass}`}>{it.estado}</div>
+                      <div className={`text-xs ${descClass}`}>{it.estado}</div>
                     </div>
                   )
                 })}

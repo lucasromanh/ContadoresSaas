@@ -17,4 +17,21 @@ const sample: Vencimiento[] = [
   { id: genId(), cliente: 'AUTONOMO P', cuit: '20-99988877-6', tipo: 'AUTONOMOS', descripcion: 'Aporte Autónomos', fecha: offsetDays(15), organismo: 'AFIP', provincia: 'Mendoza', estado: 'pendiente', criticidad: 'baja' }
 ]
 
+// Add many entries on the same date to simulate a busy day in the calendar
+const busyDate = offsetDays(3)
+for (let i = 1; i <= 12; i++) {
+  sample.push({
+    id: genId(),
+    cliente: `CLIENTE DEMO ${i}`,
+    cuit: `30-5${i.toString().padStart(7,'0')}`,
+    tipo: i % 3 === 0 ? 'MONOTRIBUTO' : i % 3 === 1 ? 'IIBB_LOCAL' : 'RENTAS',
+    descripcion: `Vencimiento ejemplo ${i}`,
+    fecha: busyDate,
+    organismo: i % 2 === 0 ? 'AFIP' : 'Rentas',
+    provincia: i % 2 === 0 ? 'Buenos Aires' : 'CABA',
+    estado: i % 4 === 0 ? 'pagado' : i % 4 === 1 ? 'presentado' : 'pendiente',
+    criticidad: i % 3 === 0 ? 'alta' : 'baja'
+  })
+}
+
 export default sample

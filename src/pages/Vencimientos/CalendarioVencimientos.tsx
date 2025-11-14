@@ -41,7 +41,7 @@ export default function CalendarioVencimientos({ items, onEventClick }: { items:
       </div>
 
       <div className="grid grid-cols-7 gap-1 text-center">
-        {weekdays.map((w)=> <div key={w} className="text-xs font-medium text-slate-500 dark:text-slate-300">{w}</div>)}
+        {weekdays.map((w)=> <div key={w} className="text-xs font-medium text-slate-400 dark:text-slate-300">{w}</div>)}
       </div>
 
       <div className="grid grid-cols-7 gap-1 mt-2">
@@ -52,17 +52,17 @@ export default function CalendarioVencimientos({ items, onEventClick }: { items:
           if (!isEmpty) dayNum = new Date(key).getDate()
           const dayItems = !isEmpty ? items.filter(it => it.fecha === key) : []
           return (
-            <div key={key} className={`min-h-[68px] p-2 border rounded ${isEmpty ? 'bg-transparent' : 'bg-white/5 dark:bg-slate-900'}`}>
-              <div className="text-xs text-slate-400">{dayNum ?? ''}</div>
+            <div key={key} className={`min-h-[68px] p-2 border rounded ${isEmpty ? 'bg-transparent' : 'bg-white/5 dark:bg-slate-800'}`}>
+              <div className="text-xs text-slate-600 dark:text-slate-300">{dayNum ?? ''}</div>
               {!isEmpty && (
                 <div className="mt-1 space-y-1">
                   {dayItems.slice(0,3).map(it => {
-                    const estadoClass = it.estado === 'vencido' ? 'text-red-400' : it.estado === 'pagado' ? 'text-emerald-300 line-through opacity-80' : it.estado === 'presentado' ? 'text-slate-400' : (it.criticidad==='alta'?'text-red-400': it.criticidad==='media'?'text-amber-300':'text-emerald-300')
+                    const estadoClass = it.estado === 'vencido' ? 'text-red-500 dark:text-red-400' : it.estado === 'pagado' ? 'text-emerald-600 dark:text-emerald-300 line-through opacity-90' : it.estado === 'presentado' ? 'text-slate-400 dark:text-slate-300' : (it.criticidad==='alta'?'text-red-400 dark:text-red-300': it.criticidad==='media'?'text-amber-300 dark:text-amber-200':'text-emerald-300 dark:text-emerald-200')
                     return (
-                      <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate overflow-hidden min-w-0 ${estadoClass}`}>{it.tipo} • {it.cliente}</div>
+                      <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate overflow-hidden min-w-0 text-slate-900 dark:text-slate-100 ${estadoClass}`}>{it.tipo} • {it.cliente}</div>
                     )
                   })}
-                  {dayItems.length>3 && <div className="text-xs text-slate-400">+{dayItems.length-3} más</div>}
+                  {dayItems.length>3 && <div className="text-xs text-slate-400 dark:text-slate-300">+{dayItems.length-3} más</div>}
                 </div>
               )}
             </div>
