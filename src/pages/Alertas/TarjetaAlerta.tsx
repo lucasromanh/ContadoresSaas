@@ -35,6 +35,7 @@ export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alert
         <div className="flex flex-col gap-2">
           <Button size="sm" variant="ghost" onClick={()=> onView && onView(alerta)}>Ver detalle</Button>
           <Button size="sm" variant="outline" onClick={()=> onMark && onMark(alerta.id, 'resuelta')}>Marcar resuelta</Button>
+          <Button size="sm" variant="ghost" onClick={()=> onMark && onMark(alerta.id, 'leida')}>Marcar leída</Button>
         </div>
         <div>
           <Button size="sm" variant="default" onClick={()=> onSend && onSend(alerta.cliente)}>Recordar</Button>

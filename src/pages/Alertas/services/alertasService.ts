@@ -81,6 +81,11 @@ const alertasService = {
   markRead: (id:string) => {
     return alertasService.markAs(id, 'leida')
   },
+  markAllRead: () => {
+    store.forEach(s => { if (s.estado === 'pendiente') s.estado = 'leida' })
+    persist()
+    return { total: store.length, pendientes: store.filter(s=>s.estado==='pendiente').length }
+  },
   remove: (id:string)=>{
     store = store.filter(s=>s.id!==id)
     persist()

@@ -76,13 +76,11 @@ export function checkAndAlertOverdue(){
   store.forEach((s)=>{
     if (s.estado === 'pendiente' && s.fecha < now){
       s.estado = 'vencido'
-      // create alert in riesgo service
-      riesgoService.addAlerta({ tipo: 'sin_documentacion', cuit: s.cuit || '', cliente: s.cliente || '', descripcion: `Vencimiento ${s.descripcion} vencido el ${s.fecha}`, criticidad: 'alta', fecha: new Date().toISOString().slice(0,10), estado: 'pendiente' })
-      // create unified alerta in alertasService
-      // avoid duplicate alerta for same vencimiento
-      const existing = alertasService.getAll().find(a => a.relacionadoCon?.vencimientoId === s.id && a.tipo === 'vencimiento' && a.descripcion.includes('venció'))
-      if (!existing) {
-        alertasService.create({ titulo: `Vencimiento vencido: ${s.descripcion}`, descripcion: `El vencimiento ${s.descripcion} para ${s.cliente || s.cuit} venció el ${s.fecha}`, tipo: 'vencimiento', fecha: new Date().toISOString(), estado: 'pendiente', criticidad: 'alta', cuit: s.cuit, cliente: s.cliente, relacionadoCon: { vencimientoId: s.id } })
+      // create alert via riesgo service (it will mirror into alertasService)
+      // ensure we don't duplicate alerts: check if any alerta already references this vencimiento
+      const exists = alertasService.getAll().find(a => a.relacionadoCon?.vencimientoId === s.id && a.tipo === 'vencimiento')
+      if (!exists) {
+        riesgoService.addAlerta({ tipo: 'sin_documentacion', cuit: s.cuit || '', cliente: s.cliente || '', descripcion: `Vencimiento ${s.descripcion} vencido el ${s.fecha}`, criticidad: 'alta', fecha: new Date().toISOString().slice(0,10), estado: 'pendiente' })
       }
     }
   })

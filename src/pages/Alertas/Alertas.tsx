@@ -48,14 +48,25 @@ export default function AlertasPage(){
     setShowSend(true)
   }
 
+  function markAllRead(){
+    alertasService.markAllRead()
+    reload()
+  }
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Alertas</h2>
       <Card>
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <FiltrosAlertas onApply={applyFilter} />
-            <div>
+            <div className="flex items-center gap-4">
+              <FiltrosAlertas onApply={applyFilter} />
+              <div className="text-sm text-slate-600">Total: <span className="font-semibold">{items.length}</span></div>
+              <div className="text-sm text-amber-700">Pendientes: <span className="font-semibold">{items.filter(i=>i.estado==='pendiente').length}</span></div>
+              <div className="text-sm text-red-600">Urgentes: <span className="font-semibold">{items.filter(i=>i.estado==='urgente').length}</span></div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button onClick={markAllRead} className="px-3 py-1 border rounded">Marcar todo leído</button>
               <button onClick={()=>setShowCreate(true)} className="btn-primary px-3 py-1">Crear alerta</button>
             </div>
           </div>
