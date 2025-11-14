@@ -56,9 +56,9 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
         </div>
         {processing && <div>Procesando... {progress}%</div>}
         {parsed && (
-          <div className="border p-2 bg-slate-50 rounded">
+          <div className="border p-2 bg-slate-50 dark:bg-slate-800 rounded">
             <div className="text-sm font-semibold">Previsualización del recibo</div>
-            <pre className="text-xs overflow-auto max-h-64">{JSON.stringify(parsed, null, 2)}</pre>
+            <pre className="mt-2 p-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 rounded max-h-64 overflow-auto text-xs">{JSON.stringify(parsed, null, 2)}</pre>
             <div className="flex justify-end gap-2 mt-2">
               <Button variant="outline" onClick={()=> setParsed(null)}>Editar / Cancelar</Button>
               <Button onClick={handleSave}>Confirmar y guardar</Button>

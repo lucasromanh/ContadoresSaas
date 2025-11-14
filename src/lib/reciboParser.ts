@@ -36,7 +36,7 @@ function buildLines(ocr: OCRResult){
 }
 
 // Heuristic parser that tries to extract the required JSON structure.
-export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string }): ReciboSueldo | { error: string }{
+export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string }){
   const lines = buildLines(ocr)
   const text = ocr.text || lines.join('\n')
   const now = new Date().toISOString()
@@ -53,7 +53,7 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
   if (cuitMatch) empleador.cuit = (cuitMatch[2] || cuitMatch[0]).trim()
 
   // Employee
-  const empleado: any = { nombre: '', cuil: '', categoria: '', fechaIngreso: '', periodoLiquidacion: '' }
+  const empleado: any = { nombre: '', apellido: '', cuil: '', categoria: '', fechaIngreso: '', periodoLiquidacion: '' }
   const cuilMatch = text.match(/(CUIL|Cuil|cuil)[:\s]*([0-9\-]{11,15})/i)
   if (cuilMatch) empleado.cuil = (cuilMatch[2] || cuilMatch[0]).trim()
   const nombreEmpLine = findLine(/(Empleado|Apellido y Nombre|Nombre[:\s])/i) || findLine(/^[A-ZÁÉÍÓÚÑ][\w\s\-]+\s[A-ZÁÉÍÓÚÑ][\w\s\-]+$/)
@@ -80,8 +80,8 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
   }
 
   // classify sections: look for headings
-  const haberes: Array<{ codigo: string | null; descripcion: string; importe: number }> = []
-  const deducciones: Array<{ codigo: string | null; descripcion: string; importe: number }> = []
+  const haberes: Array<{ codigo: string | null; descripcion: string; importe: number | null }> = []
+  const deducciones: Array<{ codigo: string | null; descripcion: string; importe: number | null }> = []
 
   // Find common headings indices
   const idxHab = lines.findIndex(l => /HABERES|CONCEPTOS REMUNERATIVOS|REMUNERATIVOS/i.test(l))
@@ -94,7 +94,7 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
     const codigo = codeMatch ? codeMatch[1] : null
     // last money is amount
     const money = raw.match(moneyRx)
-    const importe = money ? parseAmount(money[money.length-1]) : 0
+  const importe = money ? parseAmount(money[money.length-1]) : null
     // description is raw without the amount(s)
     const desc = raw.replace(moneyRx, '').replace(/^\s*\d{1,4}\s*/,'').trim()
     return { codigo, descripcion: desc || raw, importe }
@@ -134,7 +134,7 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
   const totalDedLine = findLine(/Total\s+Deducciones|TOTAL DEDUCCIONES/i)
   const netoLine = findLine(/Neto a Cobrar|Total a Cobrar|Neto a Percibir|Neto/i)
 
-  const totals: any = { totalHaberes: 0, totalDeducciones: 0, neto: 0, netoEnLetras: '' }
+  const totals: any = { totalHaberes: null as number | null, totalDeducciones: null as number | null, neto: null as number | null, netoEnLetras: '' }
   if (totalHabLine){
     const m = totalHabLine.match(moneyRx)
     if (m) totals.totalHaberes = parseAmount(m[m.length-1])
@@ -152,21 +152,25 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
   }
 
   // If totals not found, compute from items
-  const sumHab = haberes.reduce((s,h)=> s + (h.importe||0), 0)
-  const sumDed = deducciones.reduce((s,d)=> s + (d.importe||0), 0)
-  if (!totals.totalHaberes) totals.totalHaberes = sumHab
-  if (!totals.totalDeducciones) totals.totalDeducciones = sumDed
-  if (!totals.neto) totals.neto = Math.max(0, totals.totalHaberes - totals.totalDeducciones)
+  const sumHab = haberes.reduce((s,h)=> s + (Number(h.importe) || 0), 0)
+  const sumDed = deducciones.reduce((s,d)=> s + (Number(d.importe) || 0), 0)
+  if (totals.totalHaberes === null && sumHab > 0) totals.totalHaberes = sumHab
+  if (totals.totalDeducciones === null && sumDed > 0) totals.totalDeducciones = sumDed
+  if (totals.neto === null && (totals.totalHaberes !== null || totals.totalDeducciones !== null)){
+    const th = totals.totalHaberes || 0
+    const td = totals.totalDeducciones || 0
+    totals.neto = Math.max(0, th - td)
+  }
 
   // validations
   const inconsistencias: string[] = []
-  if (Math.abs(sumHab - totals.totalHaberes) > 1) inconsistencias.push('El total de haberes no coincide con la sumatoria de ítems')
-  if (Math.abs(sumDed - totals.totalDeducciones) > 1) inconsistencias.push('El total de deducciones no coincide con la sumatoria de ítems')
+  if (totals.totalHaberes !== null && Math.abs(sumHab - totals.totalHaberes) > 1) inconsistencias.push('El total de haberes no coincide con la sumatoria de ítems')
+  if (totals.totalDeducciones !== null && Math.abs(sumDed - totals.totalDeducciones) > 1) inconsistencias.push('El total de deducciones no coincide con la sumatoria de ítems')
 
   // Map haberes/deducciones into conceptos to match ReciboSueldo type
   const conceptos: Array<any> = []
-  for (const h of haberes) conceptos.push({ codigo: h.codigo || undefined, descripcion: h.descripcion, haberes: Number(h.importe||0), deducciones: 0 })
-  for (const d of deducciones) conceptos.push({ codigo: d.codigo || undefined, descripcion: d.descripcion, haberes: 0, deducciones: Number(d.importe||0) })
+  for (const h of haberes) conceptos.push({ codigo: h.codigo || '', descripcion: h.descripcion, haberes: h.importe !== null ? Number(h.importe) : null, deducciones: null })
+  for (const d of deducciones) conceptos.push({ codigo: d.codigo || '', descripcion: d.descripcion, haberes: null, deducciones: d.importe !== null ? Number(d.importe) : null })
 
   const periodoMes = (() => {
     if (empleado.periodoLiquidacion){
@@ -177,26 +181,42 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
     return { mes: (meta?.filename||'').split('_')[0] || 'Sin periodo', año: new Date().getFullYear() }
   })()
 
-  const recibo: ReciboSueldo = {
-    id: 'r_' + Math.random().toString(36).slice(2,9),
-    empleado: { nombre: (empleado.nombre || (meta?.filename||'Empleado')).split(' ')[0], apellido: (empleado.nombre || '').split(' ').slice(1).join(' ') || undefined, cuil: empleado.cuil || '', categoria: empleado.categoria || undefined, fechaIngreso: empleado.fechaIngreso || undefined },
-    empleador: { razonSocial: empleador.nombre || (meta?.filename||'').split('_')[0], cuit: empleador.cuit || '', direccion: empleador.domicilio || undefined, actividad: empleador.actividad || undefined },
-    periodo: { mes: periodoMes.mes || 'Sin periodo', año: periodoMes.año || new Date().getFullYear() },
-    conceptos,
-    totales: { totalHaberes: Number(totals.totalHaberes||0), totalDeducciones: Number(totals.totalDeducciones||0), totalNoRemunerativo: 0, neto: Number(totals.neto||0) },
-    archivoOriginalUrl: undefined,
-    observaciones: inconsistencias.length ? inconsistencias : undefined,
-    metadata: { nombreArchivo: meta?.filename || '', deteccionAutomatica: 'recibo_sueldo' },
-    fechaCarga: now,
-    origen: 'ocr'
+  // Build standardized structure required by frontend (always include keys)
+  const standard = {
+    empleado: {
+      nombre: empleado.nombre || 'No detectado',
+      apellido: empleado.apellido || '',
+      cuil: empleado.cuil || ''
+    },
+    empleador: {
+      razonSocial: empleador.nombre || (meta?.filename||'') || 'No detectado',
+      cuit: empleador.cuit || '',
+      domicilio: empleador.domicilio || ''
+    },
+    periodo: {
+      mes: periodoMes.mes || 'Sin periodo',
+      año: String(periodoMes.año || new Date().getFullYear())
+    },
+    conceptos: conceptos.map((c:any)=>({ codigo: c.codigo || '', descripcion: c.descripcion || '', haberes: c.haberes !== null ? Number(c.haberes) : null, deducciones: c.deducciones !== null ? Number(c.deducciones) : null })),
+    totales: {
+      totalHaberes: totals.totalHaberes !== null ? Number(totals.totalHaberes) : null,
+      totalDeducciones: totals.totalDeducciones !== null ? Number(totals.totalDeducciones) : null,
+      neto: totals.neto !== null ? Number(totals.neto) : null
+    },
+    observaciones: inconsistencias.length ? inconsistencias : [],
+    archivoOriginalUrl: meta?.filename || ''
   }
 
   // final sanity: if we have no conceptos and neto is zero -> failed parse
-  if ((!recibo.conceptos || recibo.conceptos.length === 0) && recibo.totales.neto === 0){
-    return { error: 'Formato de recibo no reconocido o OCR insuficiente' }
+  // Decide if parse is meaningful: require either a cuil/cuit or at least one amount
+  const hasId = Boolean(empleador.cuit || empleado.cuil)
+  const hasAmounts = (standard.conceptos && standard.conceptos.length > 0) || (standard.totales.totalHaberes !== null) || (standard.totales.totalDeducciones !== null) || (standard.totales.neto !== null)
+
+  if (!hasId && !hasAmounts){
+    return { error: 'No se pudo interpretar el recibo' }
   }
 
-  return recibo
+  return standard
 }
 
 export default { parseReciboFromOCR }

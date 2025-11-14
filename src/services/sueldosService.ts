@@ -41,23 +41,52 @@ const sueldosService = {
   },
 
   // Save a parsed recibo (attach original file data url, fechaCarga and persist)
-  saveParsedRecibo: async (recibo: ReciboSueldo, file?: File) => {
+  saveParsedRecibo: async (recibo: any, file?: File) => {
     await sueldosService.load()
+    // if passed an OCR-parsed "standard" object, map it to internal ReciboSueldo shape
+    let internal: ReciboSueldo
+    if (!recibo || (recibo && (recibo.empleado && recibo.empleado.nombre !== undefined && recibo.totales !== undefined && recibo.empleador))){
+      // assume it's the standard parsed shape
+      const parsed = recibo
+      const conceptos = Array.isArray(parsed.conceptos) ? parsed.conceptos.map((c:any)=>({ codigo: c.codigo || '', descripcion: c.descripcion || '', haberes: Number(c.haberes || 0), deducciones: Number(c.deducciones || 0), noRemunerativo: 0 })) : []
+      const sumHab = conceptos.reduce((s:any,c:any)=> s + (Number(c.haberes)||0), 0)
+      const sumDed = conceptos.reduce((s:any,c:any)=> s + (Number(c.deducciones)||0), 0)
+      const totalHab = parsed.totales?.totalHaberes != null ? Number(parsed.totales.totalHaberes) : (sumHab || 0)
+      const totalDed = parsed.totales?.totalDeducciones != null ? Number(parsed.totales.totalDeducciones) : (sumDed || 0)
+      const neto = parsed.totales?.neto != null ? Number(parsed.totales.neto) : Math.max(0, totalHab - totalDed)
+
+      internal = {
+        id: 'r_' + Math.random().toString(36).slice(2,9),
+        empleado: { nombre: parsed.empleado?.nombre || 'No detectado', apellido: parsed.empleado?.apellido || '', cuil: parsed.empleado?.cuil || '' },
+        empleador: { razonSocial: parsed.empleador?.razonSocial || '', cuit: parsed.empleador?.cuit || '', direccion: parsed.empleador?.domicilio || '' },
+        periodo: { mes: parsed.periodo?.mes || 'Sin periodo', año: Number(parsed.periodo?.año || (new Date().getFullYear())) },
+        conceptos,
+        totales: { totalHaberes: Number(totalHab), totalDeducciones: Number(totalDed), totalNoRemunerativo: 0, neto: Number(neto) },
+        archivoOriginalUrl: parsed.archivoOriginalUrl || undefined,
+        observaciones: parsed.observaciones || [],
+        metadata: { nombreArchivo: parsed.archivoOriginalUrl || '' },
+        fechaCarga: new Date().toISOString(),
+        origen: 'ocr'
+      }
+    } else {
+      // assume it's already internal ReciboSueldo
+      internal = recibo as ReciboSueldo
+    }
+
     if (file){
       const read = new FileReader()
       const dataUrl: Promise<string> = new Promise((res)=>{ read.onload = ()=> res(String(read.result)); read.readAsDataURL(file) })
-      recibo.archivoOriginalUrl = await dataUrl
+      internal.archivoOriginalUrl = await dataUrl
     }
-    recibo.fechaCarga = new Date().toISOString()
-    recibo.origen = 'ocr'
-    store = [recibo, ...store]
+
+    store = [internal, ...store]
     persist()
-    if (recibo.observaciones && recibo.observaciones.length > 0){
-      recibo.observaciones.forEach((obs: string) => {
-        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: (recibo.empleado as any).cuil || '', criticidad: 'alta' })
+    if (internal.observaciones && internal.observaciones.length > 0){
+      internal.observaciones.forEach((obs: string) => {
+        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: (internal.empleado as any).cuil || '', criticidad: 'alta' })
       })
     }
-    return recibo
+    return internal
   },
   detectErrors: (recibo: ReciboSueldo) => {
     const issues: string[] = []
