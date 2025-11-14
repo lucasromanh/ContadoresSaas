@@ -9,6 +9,7 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
   const [empleado, setEmpleado] = useState('')
   const [processing, setProcessing] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [parsed, setParsed] = useState<any|null>(null)
 
   const handleProcess = async () => {
     if (!file) return alert('Sube un archivo primero')
@@ -16,12 +17,30 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
     setProgress(10)
     try{
       const res = await sueldosService.processFile(file, { asociadoA: empleado })
+      setProgress(80)
+      if ((res as any).error){
+        alert('Error al parsear: '+ (res as any).error)
+        setProcessing(false)
+        setProgress(0)
+        return
+      }
+      setParsed(res)
       setProgress(100)
-      onProcessed && onProcessed(res)
-      onClose()
+      // don't close yet; show preview and let user confirm
     }catch(e){
       alert('Error procesando archivo: '+ String(e))
     }finally{ setProcessing(false); setProgress(0) }
+  }
+
+  const handleSave = async () => {
+    if (!parsed) return
+    try{
+      setProcessing(true)
+      const saved = await sueldosService.saveParsedRecibo(parsed, file || undefined)
+      onProcessed && onProcessed(saved)
+      setParsed(null)
+      onClose()
+    }catch(e){ alert('Error guardando: '+ String(e)) }finally{ setProcessing(false) }
   }
 
   return (
@@ -36,9 +55,19 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
           <Input value={empleado} onChange={(e)=> setEmpleado(e.target.value)} placeholder="Nombre o CUIT" />
         </div>
         {processing && <div>Procesando... {progress}%</div>}
+        {parsed && (
+          <div className="border p-2 bg-slate-50 rounded">
+            <div className="text-sm font-semibold">Previsualización del recibo</div>
+            <pre className="text-xs overflow-auto max-h-64">{JSON.stringify(parsed, null, 2)}</pre>
+            <div className="flex justify-end gap-2 mt-2">
+              <Button variant="outline" onClick={()=> setParsed(null)}>Editar / Cancelar</Button>
+              <Button onClick={handleSave}>Confirmar y guardar</Button>
+            </div>
+          </div>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
-          <Button onClick={handleProcess} disabled={processing}>Procesar y guardar</Button>
+          <Button onClick={handleProcess} disabled={processing || !!parsed}>Procesar</Button>
         </div>
       </div>
     </Dialog>

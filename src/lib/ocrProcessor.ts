@@ -9,13 +9,30 @@ export async function processFileOCR(file: File): Promise<{ text: string; pages?
     // prefer createWorker if available (recognize may be a top-level helper); check for createWorker
     if (t && (t as any).createWorker){
       // use tesseract to recognize image/pdf pages
-      // read file as data URL and pass to recognize
-      const dataUrl = await new Promise<string>((res, rej) => {
-        const r = new FileReader()
-        r.onload = ()=> res(String(r.result))
-        r.onerror = rej
-        r.readAsDataURL(file)
-      })
+      // If the file is an image, try a lightweight preprocessing step to improve OCR
+      let dataUrl: string
+      try{
+        if (file.type && file.type.startsWith('image/') && typeof window !== 'undefined'){
+          // dynamic import the image preprocess util to avoid bundling if unused
+          const ip = await import('./imagePreprocess')
+          dataUrl = await ip.preprocessImageFileToDataUrl(file as any)
+        } else {
+          dataUrl = await new Promise<string>((res, rej) => {
+            const r = new FileReader()
+            r.onload = ()=> res(String(r.result))
+            r.onerror = rej
+            r.readAsDataURL(file)
+          })
+        }
+      }catch(e){
+        // fallback to direct read
+        dataUrl = await new Promise<string>((res, rej) => {
+          const r = new FileReader()
+          r.onload = ()=> res(String(r.result))
+          r.onerror = rej
+          r.readAsDataURL(file)
+        })
+      }
 
       // Don't pass functions (like logger) to createWorker — they cannot be cloned
       const worker: any = await (t.createWorker as any)()

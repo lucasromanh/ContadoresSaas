@@ -27,29 +27,34 @@ const sueldosService = {
   createManual: async (recibo: ReciboSueldo) => { await sueldosService.load(); store = [recibo, ...store]; persist(); return recibo },
   update: async (id: string, patch: Partial<ReciboSueldo>) => { await sueldosService.load(); store = store.map(s => s.id===id ? ({...s, ...patch}) : s); persist(); return store.find(s=>s.id===id) || null },
   remove: async (id: string) => { await sueldosService.load(); store = store.filter(s=>s.id!==id); persist(); return true },
-  // process a file: run OCR (placeholder) then parser, persist and return result
+  // process a file: run OCR then parser. Returns parsed recibo or { error }
+  // Note: this method does NOT persist the recibo; caller should confirm and call createManual to save.
   processFile: async (file: File, options?: { asociadoA?: string }) => {
     await sueldosService.load()
     const ocr = await processFileOCR(file)
     const parsed = parseReciboFromOCR(ocr as any, { filename: file.name })
     if ((parsed as any).error) {
-      // return a structured error object to the caller
-      const err = parsed as any
-      return err
+      return parsed as any
     }
     const recibo = parsed as any
-    // attach original as dataURL for preview
-    const read = new FileReader()
-    const dataUrl: Promise<string> = new Promise((res)=>{ read.onload = ()=> res(String(read.result)); read.readAsDataURL(file) })
-  recibo.archivoOriginalUrl = await dataUrl
-  recibo.fechaCarga = new Date().toISOString()
-  recibo.origen = 'ocr'
-  store = [recibo, ...store]
+    return recibo
+  },
+
+  // Save a parsed recibo (attach original file data url, fechaCarga and persist)
+  saveParsedRecibo: async (recibo: ReciboSueldo, file?: File) => {
+    await sueldosService.load()
+    if (file){
+      const read = new FileReader()
+      const dataUrl: Promise<string> = new Promise((res)=>{ read.onload = ()=> res(String(read.result)); read.readAsDataURL(file) })
+      recibo.archivoOriginalUrl = await dataUrl
+    }
+    recibo.fechaCarga = new Date().toISOString()
+    recibo.origen = 'ocr'
+    store = [recibo, ...store]
     persist()
-    // detect basic errors and create alerts
     if (recibo.observaciones && recibo.observaciones.length > 0){
       recibo.observaciones.forEach((obs: string) => {
-        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: (recibo.empleado as any).cuil || (recibo.empleado as any).cuil, criticidad: 'alta' })
+        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: (recibo.empleado as any).cuil || '', criticidad: 'alta' })
       })
     }
     return recibo
