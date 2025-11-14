@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import alertasService, { Alerta } from './services/alertasService'
+import perfilService from '../../services/perfilService'
 import ListadoAlertas from './ListadoAlertas'
 import FiltrosAlertas from './FiltrosAlertas'
 import DrawerDetalleAlerta from './DrawerDetalleAlerta'
@@ -16,10 +17,14 @@ export default function AlertasPage(){
   const [showSend, setShowSend] = useState(false)
   const [sendCliente, setSendCliente] = useState<string|undefined>(undefined)
   const [showResueltas, setShowResueltas] = useState(false)
+  const [perfilPhone, setPerfilPhone] = useState<string | null>(null)
 
   useEffect(()=>{
     alertasService.loadMock().then(d=> setItems(d))
     alertasService.runRules()
+    perfilService.getFresh().then(p=>{
+      if (p?.contacto?.telefonoPersonal) setPerfilPhone(p.contacto.telefonoPersonal)
+    })
   },[])
 
   function applyFilter(f:any){ setFilter(f) }
@@ -30,6 +35,9 @@ export default function AlertasPage(){
     if (filter.criticidad) list = list.filter(i=>i.criticidad===filter.criticidad)
     if (filter.estado) list = list.filter(i=>i.estado===filter.estado)
     if (filter.q) list = list.filter(i=> (i.cliente||i.proveedor||i.cuit||'').toLowerCase().includes(filter.q.toLowerCase()))
+    // by default hide resolved alerts from main panel; showResueltas toggle will include them
+    // but if the user explicitly filters by estado='resuelta', show them
+    if (!showResueltas && filter.estado !== 'resuelta') list = list.filter(i => i.estado !== 'resuelta')
     return list
   }
 
@@ -69,7 +77,8 @@ export default function AlertasPage(){
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={markAllRead}>Marcar todo leído</Button>
-              <Button variant="ghost" onClick={()=> setShowResueltas(v=>!v)}>{showResueltas ? 'Ocultar resueltas' : 'Ver resueltas'}</Button>
+              <Button variant="info" onClick={()=> setShowResueltas(v=>!v)}>{showResueltas ? 'Ocultar resueltas' : 'Ver resueltas'}</Button>
+              {perfilPhone && <Button variant="ghost" onClick={()=> onSend(perfilPhone)}>Enviar al contador</Button>}
               <Button variant="success" onClick={()=>setShowCreate(true)}>Crear alerta</Button>
             </div>
           </div>
@@ -77,7 +86,7 @@ export default function AlertasPage(){
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <ListadoAlertas items={showResueltas ? items.filter(i=>i.estado==='resuelta') : filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} />
+            <ListadoAlertas items={filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} />
           </div>
           <div>
             <h3 className="text-sm font-medium mb-2">Resumen</h3>
