@@ -7,13 +7,20 @@ import { useDashboard } from '../../hooks/useDashboard'
 import { useAppStore } from '../../store/useAppStore'
 
 function StatCard({ title, value, to, onClick }: { title: string; value: string; to?: string; onClick?: () => void }) {
+  const handle = (e: React.MouseEvent) => {
+    if (onClick) onClick()
+    // navigate handled by ClickableCard if provided
+  }
+
   return (
-    <ClickableCard title={title} to={to} onClick={onClick} className="flex items-center justify-center h-28">
-      <div className="text-center">
-        <div className="text-3xl md:text-4xl font-bold">{value}</div>
-        <div className="text-sm text-slate-500 dark:text-slate-300 mt-1">{title}</div>
-      </div>
-    </ClickableCard>
+    <div onClick={handle} role={to ? 'link' : 'button'} className="cursor-pointer">
+      <Card title={title} className="h-28 flex items-center justify-between">
+        <div>
+          <div className="text-3xl md:text-4xl font-bold">{value}</div>
+        </div>
+        <div className="text-sm text-slate-500 dark:text-slate-300">&nbsp;</div>
+      </Card>
+    </div>
   )
 }
 

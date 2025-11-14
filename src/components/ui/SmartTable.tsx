@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef } from 'react'
 import { exportToCsv, importCsv } from '../../lib/csv'
+import Input from './Input'
 
 type Column<T> = { key: keyof T; label: string; sortable?: boolean }
 
@@ -68,9 +69,9 @@ export function SmartTable<T extends { id?: string }>({ columns, data, loading =
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} placeholder="Buscar..." className="input input-sm" />
-          <button onClick={handleExport} className="px-2 py-1 border rounded text-sm">Exportar CSV</button>
+      <div className="flex items-center gap-2">
+        <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} placeholder="Buscar..." className="w-56" />
+        <button onClick={handleExport} className="px-2 py-1 border rounded text-sm">Exportar CSV</button>
           <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => handleImport(e.target.files)} />
           <button onClick={handleImportClick} className="px-2 py-1 border rounded text-sm">Importar CSV</button>
         </div>
