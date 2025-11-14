@@ -1,12 +1,13 @@
 // ------------------------------------------------------
-// OCR Processor compatible con Vite + TS + pdf.js 3.x + Tesseract.js v5
+// OCR Processor compatible con Vite + TS + pdf.js 4.x + Tesseract.js v5
 // ------------------------------------------------------
 
 import * as pdfjsLib from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.js?url";
 import { preprocessImageFileToDataUrl } from "./imagePreprocess";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
+// 👇 NUEVO Worker compatible con Vite + pdf.js 4.x
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs?url";
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 export type OCRResult = {
   text: string;
@@ -17,9 +18,9 @@ export type OCRResult = {
   }>;
 };
 
-// ----------------------------
+// ------------------------------------------------------
 // Helpers
-// ----------------------------
+// ------------------------------------------------------
 function readFileAsDataURL(file: File): Promise<string> {
   return new Promise((res, rej) => {
     const r = new FileReader();
@@ -39,13 +40,12 @@ function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
 }
 
 // ------------------------------------------------------
-// 1) PDF OCR mediante extracción real pdf.js
+// 1) OCR REAL PARA PDF → pdf.js extraction
 // ------------------------------------------------------
 async function extractTextFromPdf(file: File): Promise<OCRResult> {
   const buffer = await readFileAsArrayBuffer(file);
 
-  const loadingTask = pdfjsLib.getDocument({ data: buffer });
-  const pdf = await loadingTask.promise;
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
   let full = "";
   const pages: string[] = [];
@@ -53,6 +53,7 @@ async function extractTextFromPdf(file: File): Promise<OCRResult> {
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
+
     const pageText = textContent.items
       .map((it: any) => it.str || it.text || "")
       .join(" ");
@@ -61,32 +62,31 @@ async function extractTextFromPdf(file: File): Promise<OCRResult> {
     full += pageText + "\n";
   }
 
-  const normalized = full.replace(/\s+/g, " ").trim();
-  return { text: normalized, pages };
+  return {
+    text: full.replace(/\s+/g, " ").trim(),
+    pages
+  };
 }
 
 // ------------------------------------------------------
-// 2) Tesseract OCR para imágenes
+// 2) OCR PARA IMÁGENES → Tesseract.js
 // ------------------------------------------------------
 async function ocrImage(file: File): Promise<OCRResult> {
   const t = await import("tesseract.js");
 
   let dataUrl = await readFileAsDataURL(file);
 
-  // Preprocesado OpenCV-lite
   try {
     if (file.type.startsWith("image/")) {
       dataUrl = await preprocessImageFileToDataUrl(file);
     }
   } catch {}
 
-  // Worker casteado a any para evitar errores TS
   const worker: any = await t.createWorker();
 
   await worker.load();
   await worker.loadLanguage("spa").catch(() => worker.loadLanguage("eng"));
   await worker.initialize("spa").catch(() => worker.initialize("eng"));
-
   await worker.setParameters({ tessedit_pageseg_mode: 1 });
 
   const { data } = await worker.recognize(dataUrl);
@@ -94,24 +94,28 @@ async function ocrImage(file: File): Promise<OCRResult> {
 
   const text = (data?.text || "").replace(/\s+/g, " ").trim();
 
-  const d: any = data;
+  const w = data as any;
   const words: any[] = [];
 
-  if (Array.isArray(d?.words)) {
-    for (const w of d.words) {
+  if (Array.isArray(w?.words)) {
+    for (const wr of w.words) {
       words.push({
-        text: w.text || "",
+        text: wr.text || "",
         bbox: {
-          x0: w.bbox?.x0 ?? 0,
-          y0: w.bbox?.y0 ?? 0,
-          x1: w.bbox?.x1 ?? 0,
-          y1: w.bbox?.y1 ?? 0
+          x0: wr.bbox?.x0 ?? 0,
+          y0: wr.bbox?.y0 ?? 0,
+          x1: wr.bbox?.x1 ?? 0,
+          y1: wr.bbox?.y1 ?? 0
         }
       });
     }
   }
 
-  return { text, pages: [text], ...(words.length ? { words } : {}) };
+  return {
+    text,
+    pages: [text],
+    ...(words.length ? { words } : {})
+  };
 }
 
 // ------------------------------------------------------
@@ -136,22 +140,22 @@ async function fallbackText(file: File): Promise<OCRResult> {
 // FUNCIÓN PRINCIPAL
 // ------------------------------------------------------
 export async function processFileOCR(file: File): Promise<OCRResult> {
-  if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+  // PDF
+  if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
     try {
       const pdf = await extractTextFromPdf(file);
-      if (pdf.text && pdf.text.length > 20) {
-        return pdf;
-      }
+      if (pdf.text.length > 20) return pdf;
     } catch (e) {
       console.error("Error PDF:", e);
     }
   }
 
+  // Imagen
   if (file.type.startsWith("image/")) {
     try {
       return await ocrImage(file);
     } catch (e) {
-      console.error("Error OCR Imagen:", e);
+      console.error("OCR Imagen:", e);
     }
   }
 
