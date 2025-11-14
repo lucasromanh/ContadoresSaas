@@ -17,7 +17,7 @@ export default function TimelineVencimientos({ items }: { items: Vencimiento[] }
           const key = keyOf(d)
           const dayItems = items.filter(it => it.fecha === key)
           return (
-            <div key={key} className="p-2 border rounded min-h-[120px] bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+            <div key={key} className="p-2 border rounded min-h-[120px] bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700">
               <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
               <div className="mt-2 space-y-2">
                 {dayItems.map(it => {

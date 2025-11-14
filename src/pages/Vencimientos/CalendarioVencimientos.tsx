@@ -52,7 +52,7 @@ export default function CalendarioVencimientos({ items, onEventClick }: { items:
           if (!isEmpty) dayNum = new Date(key).getDate()
           const dayItems = !isEmpty ? items.filter(it => it.fecha === key) : []
           return (
-            <div key={key} className={`min-h-[68px] p-2 border rounded ${isEmpty ? 'bg-transparent' : 'bg-slate-50 dark:bg-slate-800'} border-slate-200 dark:border-slate-700`}>
+            <div key={key} className={`min-h-[68px] p-2 border rounded ${isEmpty ? 'bg-transparent' : 'bg-slate-100 dark:bg-slate-800'} border-slate-200 dark:border-slate-700`}>
               <div className="text-xs text-slate-800 dark:text-slate-100">{dayNum ?? ''}</div>
               {!isEmpty && (
                 <div className="mt-1 space-y-1">

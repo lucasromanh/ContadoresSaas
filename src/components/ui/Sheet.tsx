@@ -6,7 +6,7 @@ export const Sheet = ({ children, open, onOpenChange, title, description }: { ch
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/40" />
-        <DialogPrimitive.Content className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-slate-900 p-6 shadow-xl overflow-auto">
+  <DialogPrimitive.Content className="fixed right-0 top-0 h-full w-full max-w-md bg-slate-100 dark:bg-slate-900 p-6 shadow-xl overflow-auto">
           {title ? (
             <DialogPrimitive.Title className="text-lg font-semibold mb-4">{title}</DialogPrimitive.Title>
           ) : (

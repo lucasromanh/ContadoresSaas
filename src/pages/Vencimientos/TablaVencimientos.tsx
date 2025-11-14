@@ -18,7 +18,7 @@ export default function TablaVencimientos({ items, onViewDetail, onMark }: { ite
   return (
     <div className="overflow-auto border rounded">
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-50 dark:bg-slate-800">
+        <thead className="bg-slate-100 dark:bg-slate-800">
           <tr>
             <th className="px-2 py-1 text-left">Fecha</th>
             <th className="px-2 py-1 text-left">Tipo</th>
@@ -31,7 +31,7 @@ export default function TablaVencimientos({ items, onViewDetail, onMark }: { ite
         </thead>
         <tbody>
           {pageData.map((r)=> {
-            const estadoClass = r.estado === 'vencido' ? 'bg-red-50 dark:bg-red-900/30' : r.estado === 'pagado' ? 'bg-emerald-50 dark:bg-emerald-900/20' : r.estado === 'presentado' ? 'bg-slate-50 dark:bg-slate-800' : ''
+            const estadoClass = r.estado === 'vencido' ? 'bg-red-50 dark:bg-red-900/30' : r.estado === 'pagado' ? 'bg-emerald-50 dark:bg-emerald-900/20' : r.estado === 'presentado' ? 'bg-slate-100 dark:bg-slate-800' : ''
             const criticClass = r.criticidad==='alta'?'bg-red-50 dark:bg-red-900/30': r.criticidad==='media'?'bg-amber-50 dark:bg-amber-900/20':''
             return (
               <tr key={r.id} className={`border-t ${estadoClass} ${criticClass}`}>

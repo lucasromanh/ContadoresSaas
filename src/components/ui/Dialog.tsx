@@ -7,7 +7,7 @@ export const Dialog = ({ children, open, onOpenChange, title, description }: { c
       <DialogPrimitive.Trigger asChild>{/* trigger must be provided by consumer */}</DialogPrimitive.Trigger>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/40" />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 bg-white dark:bg-slate-900 p-6 rounded shadow-lg">
+  <DialogPrimitive.Content className="fixed left-1/2 top-1/2 w-full max-w-xl -translate-x-1/2 -translate-y-1/2 bg-slate-100 dark:bg-slate-900 p-6 rounded shadow-lg">
           {/* Use Radix Title/Description for accessibility */}
           {title ? (
             <DialogPrimitive.Title className="text-lg font-semibold mb-2">{title}</DialogPrimitive.Title>
