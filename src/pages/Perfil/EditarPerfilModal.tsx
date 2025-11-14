@@ -43,7 +43,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
       return
     }
     const updated = await perfilService.update(values as any)
-    onSaved && onSaved(updated)
+    if (onSaved && updated) onSaved(updated)
     onClose()
   }
 

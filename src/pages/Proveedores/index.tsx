@@ -12,6 +12,7 @@ export const ProveedoresPage: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [openNew, setOpenNew] = useState(false)
   const [editing, setEditing] = useState<any | null>(null)
+  const [viewing, setViewing] = useState<any | null>(null)
 
   const fetch = async () => {
     setLoading(true)
@@ -53,7 +54,8 @@ export const ProveedoresPage: React.FC = () => {
 
       <Card>
         <SmartTable loading={loading} columns={[{ key: 'id', label: 'ID' }, { key: 'razon_social', label: 'Razón social' }, { key: 'cuit', label: 'CUIT' }]} data={data} onAction={(action, row) => {
-          if (action === 'view' || action === 'edit') setEditing(row)
+          if (action === 'view') setViewing(row)
+          if (action === 'edit') setEditing(row)
           if (action === 'delete') handleDelete(row.id)
         }} />
 
@@ -63,6 +65,7 @@ export const ProveedoresPage: React.FC = () => {
               <div className="font-medium">{p.razon_social}</div>
               <div className="text-sm text-slate-500">{p.cuit}</div>
               <div className="mt-2 flex gap-2">
+                <Button onClick={() => setViewing(p)}>Ver</Button>
                 <Button onClick={() => setEditing(p)}>Editar</Button>
                 <Button onClick={() => handleDelete(p.id)}>Eliminar</Button>
               </div>
@@ -70,6 +73,31 @@ export const ProveedoresPage: React.FC = () => {
           ))}
         </div>
       </Card>
+
+      {viewing && (
+        <Dialog open={!!viewing} onOpenChange={() => setViewing(null)} title="Proveedor">
+          <div className="space-y-3">
+            <div className="text-lg font-semibold">{viewing.razon_social}</div>
+            <div className="text-sm text-slate-600">CUIT: {viewing.cuit || '-'}</div>
+            {viewing.percepciones_iva?.length > 0 && (
+              <div><strong>Percepciones IVA:</strong> {viewing.percepciones_iva.join(', ')}</div>
+            )}
+            {viewing.percepciones_iibb?.length > 0 && (
+              <div><strong>Percepciones IIBB:</strong> {viewing.percepciones_iibb.join(', ')}</div>
+            )}
+            {viewing.retenciones?.length > 0 && (
+              <div><strong>Retenciones:</strong> {viewing.retenciones.join(', ')}</div>
+            )}
+            {viewing.notas && (
+              <div><strong>Notas:</strong> <div className="mt-1 p-2 bg-slate-50 dark:bg-slate-800 rounded">{viewing.notas}</div></div>
+            )}
+            <div className="flex justify-end gap-2">
+              <Button onClick={() => { setEditing(viewing); setViewing(null) }}>Editar</Button>
+              <Button variant="outline" onClick={() => setViewing(null)}>Cerrar</Button>
+            </div>
+          </div>
+        </Dialog>
+      )}
 
       <Dialog open={openNew} onOpenChange={setOpenNew} title="Crear proveedor">
         <Form onSubmit={handleCreate} defaultValues={{ razon_social: '', cuit: '' }}>
