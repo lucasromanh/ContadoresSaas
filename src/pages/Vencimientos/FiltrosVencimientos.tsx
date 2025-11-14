@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useClientes } from '../../hooks/useClientes'
 
 export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApply: (f:any)=>void; onSendReminder?: ()=>void }){
   const [cliente, setCliente] = useState('')
@@ -7,13 +8,24 @@ export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApp
   const [estado, setEstado] = useState('')
   const [provincia, setProvincia] = useState('')
 
+  const { data: clientes } = useClientes()
+
   function apply(){ onApply({ cliente, cuit, tipo, estado, provincia }) }
 
   return (
     <div className="flex flex-wrap gap-3 items-end">
       <div>
         <label className="text-xs text-slate-500">Cliente</label>
-        <input className="block border px-2 py-1 rounded bg-white dark:bg-slate-700 dark:text-slate-100" value={cliente} onChange={(e)=>setCliente(e.target.value)} />
+        <input list="clientes-list" className="block border px-2 py-1 rounded bg-white dark:bg-slate-700 dark:text-slate-100" value={cliente} onChange={(e)=>{
+          const v = e.target.value
+          setCliente(v)
+          // auto-fill CUIT when exact match found
+          const found = (clientes || []).find((c:any)=> (c.razon_social || c.nombre || '').toLowerCase() === v.toLowerCase())
+          if (found) setCuit(found.cuit || '')
+        }} />
+        <datalist id="clientes-list">
+          {(clientes || []).map((c:any)=>(<option key={c.id || c.nombre} value={c.razon_social || c.nombre} />))}
+        </datalist>
       </div>
       <div>
         <label className="text-xs text-slate-500">CUIT</label>

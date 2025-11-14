@@ -61,15 +61,15 @@ export default function VencimientosPage(){
             <h3 className="text-sm font-medium mb-2">Proximos vencimientos</h3>
             <div className="space-y-2">
               {filtered().slice(0,6).map((it)=> (
-                <TarjetaVencimiento key={it.id} item={it} onView={() => setSelected(it)} onSend={() => setShowModal(true)} />
+                <TarjetaVencimiento key={it.id} item={it} onView={() => setSelected(it)} onSend={() => { setSelected(it); setShowModal(true) }} />
               ))}
             </div>
           </div>
         </div>
       </Card>
 
-      {selected && <DetalleVencimientoDrawer item={selected} onClose={()=>setSelected(null)} onMark={onMark} />}
-      {showModal && <GeneradorAlertas onClose={()=>setShowModal(false)} />}
+  {selected && <DetalleVencimientoDrawer item={selected} onClose={()=>setSelected(null)} onMark={onMark} />}
+  {showModal && <GeneradorAlertas onClose={()=>setShowModal(false)} initialCliente={filter.cliente || selected?.cliente} />}
     </div>
   )
 }
