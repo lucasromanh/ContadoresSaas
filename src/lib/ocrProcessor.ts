@@ -6,28 +6,45 @@ export async function processFileOCR(file: File): Promise<{ text: string; pages?
   try{
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const t = await import('tesseract.js')
-  // prefer createWorker if available (recognize may be a top-level helper); check for createWorker
-  if (t && (t as any).createWorker){
+    // prefer createWorker if available (recognize may be a top-level helper); check for createWorker
+    if (t && (t as any).createWorker){
       // use tesseract to recognize image/pdf pages
-      // For simplicity, read file as data URL and pass to recognize
+      // read file as data URL and pass to recognize
       const dataUrl = await new Promise<string>((res, rej) => {
         const r = new FileReader()
         r.onload = ()=> res(String(r.result))
         r.onerror = rej
         r.readAsDataURL(file)
       })
-  // Don't pass functions (like logger) to createWorker — they cannot be cloned
-  // across to the worker and cause DataCloneError when postMessage is used.
-  // createWorker may return a promise in some builds — await to get the actual worker
-  const worker: any = await (t.createWorker as any)()
+
+      // Don't pass functions (like logger) to createWorker — they cannot be cloned
+      const worker: any = await (t.createWorker as any)()
+      // load and initialize languages (try spa then fall back to eng)
       await worker.load()
       await worker.loadLanguage('spa').catch(()=> worker.loadLanguage('eng'))
       await worker.initialize('spa').catch(()=> worker.initialize('eng'))
+
+      // choose a PSM that is robust for documents
+      try{ await worker.setParameters({ tessedit_pageseg_mode: '1' }) }catch(e){}
+
+      // perform recognition and keep detailed data (words with bbox)
       const { data } = await worker.recognize(dataUrl)
       await worker.terminate()
+
       const text = (data && data.text) ? String(data.text) : String(file.name)
       const normalized = text.replace(/\s+/g, ' ').trim()
-      return { text: normalized, pages: [normalized] }
+
+      // extract words with bbox if available
+      const words: Array<any> = []
+      try{
+        if (data && Array.isArray(data.words)){
+          for (const w of data.words){
+            words.push({ text: String(w.text || ''), bbox: { x0: w.bbox?.x0 ?? w.x0 ?? 0, y0: w.bbox?.y0 ?? w.y0 ?? 0, x1: w.bbox?.x1 ?? w.x1 ?? 0, y1: w.bbox?.y1 ?? w.y1 ?? 0 } })
+          }
+        }
+      }catch(e){}
+
+      return { text: normalized, pages: [normalized], ...(words.length? { words } : {}) }
     }
   }catch(e){
     // dynamic import failed or recognition failed — fall back

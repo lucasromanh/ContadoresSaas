@@ -32,6 +32,10 @@ export interface ReciboSueldo {
   }
   archivoOriginalUrl?: string
   observaciones?: string[]
+  metadata?: {
+    nombreArchivo?: string
+    deteccionAutomatica?: string
+  }
   fechaCarga: string
   origen: 'manual' | 'ocr'
 }

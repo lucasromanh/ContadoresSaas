@@ -1,7 +1,7 @@
 import { ReciboSueldo, SueldoSummary } from '../types/reciboSueldo'
 import sueldosMock from '../mocks/sueldosMock'
 import { processFileOCR } from '../lib/ocrProcessor'
-import { parseReciboFromText } from '../lib/reciboParser'
+import { parseReciboFromOCR } from '../lib/reciboParser'
 import alertasService from '../pages/Alertas/services/alertasService'
 
 const STORAGE = 'sueldos_store_v2'
@@ -31,19 +31,25 @@ const sueldosService = {
   processFile: async (file: File, options?: { asociadoA?: string }) => {
     await sueldosService.load()
     const ocr = await processFileOCR(file)
-    const recibo = parseReciboFromText(ocr.text, { filename: file.name })
+    const parsed = parseReciboFromOCR(ocr as any, { filename: file.name })
+    if ((parsed as any).error) {
+      // return a structured error object to the caller
+      const err = parsed as any
+      return err
+    }
+    const recibo = parsed as any
     // attach original as dataURL for preview
     const read = new FileReader()
     const dataUrl: Promise<string> = new Promise((res)=>{ read.onload = ()=> res(String(read.result)); read.readAsDataURL(file) })
-    recibo.archivoOriginalUrl = await dataUrl
-    recibo.fechaCarga = new Date().toISOString()
-    recibo.origen = 'ocr'
-    store = [recibo, ...store]
+  recibo.archivoOriginalUrl = await dataUrl
+  recibo.fechaCarga = new Date().toISOString()
+  recibo.origen = 'ocr'
+  store = [recibo, ...store]
     persist()
     // detect basic errors and create alerts
     if (recibo.observaciones && recibo.observaciones.length > 0){
-      recibo.observaciones.forEach(obs => {
-        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: recibo.empleado.cuil, criticidad: 'alta' })
+      recibo.observaciones.forEach((obs: string) => {
+        alertasService.create({ titulo: 'Error en recibo OCR', descripcion: obs, tipo: 'ocr', cuit: (recibo.empleado as any).cuil || (recibo.empleado as any).cuil, criticidad: 'alta' })
       })
     }
     return recibo
