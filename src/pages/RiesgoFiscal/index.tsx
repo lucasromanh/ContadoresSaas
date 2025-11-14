@@ -1,24 +1,73 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { RiskSummary } from './components/RiskSummary'
+import { RiskStats } from './components/RiskStats'
+import { RiskFilters } from './components/RiskFilters'
+import { RiskCard } from './components/RiskCard'
+import { RiskTable } from './components/RiskTable'
+import { RiskDetailDrawer } from './components/RiskDetailDrawer'
+import riesgoService from './services/riesgoService'
+import { AlertaFiscal } from './services/riesgoService'
 import { Card } from '../../components/ui/Card'
-
-const categories = [
-  { key: 'no_documenta', title: 'No envía documentación', color: 'bg-yellow-100' },
-  { key: 'deuda_afip', title: 'Tiene deuda AFIP', color: 'bg-red-100' },
-  { key: 'proy_multa', title: 'Proyección de multa', color: 'bg-orange-100' },
-  { key: 'cambio_categoria', title: 'Pasa de categoría en 45 días', color: 'bg-blue-100' }
-]
+import { AlertTriangle, FileText, ShieldAlert, ClipboardList } from 'lucide-react'
 
 export const RiesgoFiscalPage: React.FC = () => {
+  const [alertas, setAlertas] = useState<AlertaFiscal[]>([])
+  const [selected, setSelected] = useState<AlertaFiscal | null>(null)
+  const [filters, setFilters] = useState<any>({})
+
+  useEffect(() => {
+    async function load() {
+      const data = await riesgoService.getAlertas()
+      setAlertas(data)
+    }
+    load()
+  }, [])
+
+  const onFilter = (f: any) => {
+    setFilters(f)
+  }
+
+  const filtered = riesgoService.applyFilters(alertas, filters)
+
+  const countsByType = riesgoService.countsByTipo(filtered)
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-      {categories.map((c) => (
-        <Card key={c.key} title={c.title}>
-          <ul className="text-sm space-y-1">
-            <li>CUIT: 20-12345678-9 — Cliente X</li>
-            <li>CUIT: 30-98765432-1 — Cliente Y</li>
-          </ul>
-        </Card>
-      ))}
+    <div className="space-y-4">
+      <RiskSummary alertas={filtered} />
+      <div className="mt-4">
+        <RiskStats alertas={filtered} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <RiskCard icon={<AlertTriangle />} title="Crítico" color="red" count={countsByType.alta || 0} onClick={() => setFilters({ criticidad: 'alta' })} />
+        <RiskCard icon={<ShieldAlert />} title="Moderado" color="yellow" count={countsByType.media || 0} onClick={() => setFilters({ criticidad: 'media' })} />
+        <RiskCard icon={<FileText />} title="Info" color="blue" count={countsByType.baja || 0} onClick={() => setFilters({ criticidad: 'baja' })} />
+        <RiskCard icon={<ClipboardList />} title="Todas" color="slate" count={filtered.length} onClick={() => setFilters({})} />
+      </div>
+
+      <Card>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="flex-1">
+            <RiskFilters onFilter={onFilter} />
+          </div>
+          <div className="w-full md:w-1/3 text-right">
+            {/* placeholder for actions */}
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <RiskTable alertas={filtered} onViewDetail={(a) => setSelected(a)} />
+        </div>
+      </Card>
+
+      <RiskDetailDrawer alerta={selected} onClose={() => setSelected(null)} onResolve={async (id) => {
+        await riesgoService.resolverAlerta(id)
+        const data = await riesgoService.getAlertas()
+        setAlertas(data)
+        setSelected(null)
+      }} />
     </div>
   )
 }
+
+export default RiesgoFiscalPage
