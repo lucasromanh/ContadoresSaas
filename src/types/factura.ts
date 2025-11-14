@@ -36,4 +36,7 @@ export interface FacturaExtraida {
     exento?: number
     total?: number
   }
+  // metadata
+  archivoOriginalUrl?: string
+  origen?: string
 }
