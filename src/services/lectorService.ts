@@ -7,9 +7,10 @@ import clientesService from './clientesService'
 import proveedoresService from './proveedoresService'
 import dashboardService from './dashboardService'
 import documentosService from './documentosService'
+import iibbService from './iibbService'
 
 // Orchestrator service that decides how to extract based on file type.
-export async function extractFromFile(file: File): Promise<FacturaExtraida> {
+export async function extractFromFile(file: File, onProgress?: (p: number) => void): Promise<FacturaExtraida> {
   const name = file.name.toLowerCase()
   let text = ''
   if (name.endsWith('.xml')) {
@@ -20,11 +21,11 @@ export async function extractFromFile(file: File): Promise<FacturaExtraida> {
   } else if (name.endsWith('.pdf')) {
     text = await pdfService.extractTextFromPdf(file)
     if (!text) {
-      // fallback to OCR
-      text = await ocrService.recognizeImage(file)
+      // fallback to OCR (pass progress callback)
+      text = await ocrService.recognizeImage(file, onProgress)
     }
   } else if (name.endsWith('.jpg') || name.endsWith('.jpeg') || name.endsWith('.png')) {
-    text = await ocrService.recognizeImage(file)
+    text = await ocrService.recognizeImage(file, onProgress)
   }
 
   // If still empty, use mock fallback for demo (based on example invoice)
@@ -61,6 +62,18 @@ export async function saveExtractedFactura(f: FacturaExtraida, file?: File) {
   const total = f.totales?.total || 0
   // For demo, treat as ingreso
   await dashboardService.addIngreso(total)
+
+  // Add a line to IIBB mock so the IIBB page can display detected amounts
+  try {
+    iibbService.addEntry({
+      fecha: f.comprobante?.fechaEmision || new Date().toISOString(),
+      tipo: f.tipo || 'N/A',
+      emisorCuit: f.emisor?.cuit,
+      receptorCuit: f.receptor?.cuit,
+      total: total,
+      origen: file?.name || 'manual'
+    })
+  } catch (e) { /* ignore */ }
 
   // TODO: integrate Libros IVA, IIBB, RiesgoFiscal
   return true

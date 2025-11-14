@@ -6,6 +6,8 @@ import EditFacturaDialog from './EditFacturaDialog'
 import Historial from './Historial'
 import lectorService from '../../services/lectorService'
 import { FacturaExtraida } from '../../types/factura'
+import { toastSuccess, toastError } from '../../components/ui/Toaster'
+import toast from 'react-hot-toast'
 
 export const LectorFacturasPage: React.FC = () => {
   const [file, setFile] = useState<File | undefined>(undefined)
@@ -13,16 +15,23 @@ export const LectorFacturasPage: React.FC = () => {
   const [editing, setEditing] = useState(false)
   const [historial, setHistorial] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState<number>(0)
 
   const handleFile = async (f: File) => {
     setFile(f)
     setLoading(true)
+    setProgress(0)
+    const toastId = toast.loading('Extrayendo comprobante...')
     try {
-      const res = await lectorService.extractFromFile(f)
+      const res = await lectorService.extractFromFile(f, (p) => setProgress(p))
       setFactura(res)
       setHistorial((h) => [{ at: new Date().toISOString(), file: f.name, data: res }, ...h])
+      toast.dismiss(toastId)
+      toastSuccess('Extracción completada')
     } catch (e) {
+      toast.dismiss()
       console.error(e)
+      toastError('Error extrayendo el comprobante')
     } finally { setLoading(false) }
   }
 
@@ -33,10 +42,13 @@ export const LectorFacturasPage: React.FC = () => {
 
   const handleSaveSystem = async () => {
     if (!factura) return
-    await lectorService.saveExtractedFactura(factura, file)
-    // feedback minimal
-    setHistorial((h) => [{ at: new Date().toISOString(), saved: true, data: factura }, ...h])
-    alert('Factura guardada (mock)')
+    try {
+      await lectorService.saveExtractedFactura(factura, file)
+      setHistorial((h) => [{ at: new Date().toISOString(), saved: true, data: factura }, ...h])
+      toastSuccess('Factura guardada en el sistema (mock)')
+    } catch (e) {
+      toastError('No se pudo guardar la factura')
+    }
   }
 
   return (
@@ -48,7 +60,16 @@ export const LectorFacturasPage: React.FC = () => {
           <div className="mt-3"><FilePreview file={file} /></div>
         </div>
         <div className="md:col-span-2">
-          {loading ? <div>Cargando extracción...</div> : <ExtractionResult factura={factura} onEdit={() => setEditing(true)} onSave={handleSaveSystem} />}
+          {loading ? (
+            <div>
+              <div className="mb-2">Extrayendo... {Math.round(progress * 100)}%</div>
+              <div className="w-full bg-slate-700 h-2 rounded overflow-hidden">
+                <div className="h-2 bg-primary" style={{ width: `${Math.round(progress * 100)}%` }} />
+              </div>
+            </div>
+          ) : (
+            <ExtractionResult factura={factura} onEdit={() => setEditing(true)} onSave={handleSaveSystem} />
+          )}
         </div>
       </div>
 

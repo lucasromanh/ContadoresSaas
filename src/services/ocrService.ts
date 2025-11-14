@@ -22,17 +22,16 @@ async function ensureWorker() {
 
 export async function recognizeImage(file: File, onProgress?: (p: number) => void): Promise<string> {
   try {
+    if (onProgress) onProgress(0.05)
     await ensureWorker()
+    if (onProgress) onProgress(0.25)
     if (!workerInstance) return ''
-    // attach a temporary logger if onProgress provided
-    const logger = (m: any) => {
-      if (onProgress && typeof m === 'object' && m.status === 'recognizing text' && m.progress) {
-        onProgress(m.progress)
-      }
-    }
-    // @ts-ignore access workerInstance._worker (internal) is not ideal; use recognize with logger parameter
+    // best-effort progress simulation (tesseract worker logger would be ideal)
+    if (onProgress) onProgress(0.5)
+    // @ts-ignore - workerInstance is "any"
     const res = await workerInstance.recognize(file, 'spa')
-    return res.data?.text ?? ''
+    if (onProgress) onProgress(1)
+    return res?.data?.text ?? ''
   } catch (e) {
     console.error('ocrService.recognizeImage error', e)
     return ''
