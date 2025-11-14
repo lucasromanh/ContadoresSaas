@@ -5,6 +5,7 @@ import xmlService from './xmlService'
 import { parseFacturaFromText } from './facturaParser'
 import clientesService from './clientesService'
 import proveedoresService from './proveedoresService'
+import alertasService from '../pages/Alertas/services/alertasService'
 import dashboardService from './dashboardService'
 import documentosService from './documentosService'
 import iibbService from './iibbService'
@@ -38,6 +39,82 @@ export async function extractFromFile(file: File, onProgress?: (p: number) => vo
 }
 
 export async function saveExtractedFactura(f: FacturaExtraida, file?: File) {
+  // Before saving, run quick checks to detect duplicates and CUIT inconsistencies
+  try {
+    const docs = await documentosService.listDocuments()
+
+    // Duplicate detection: match by CAE or by puntoVenta+numero+emisor.cuit
+    const duplicate = docs.find((d: any) => {
+      const m = d.meta?.comprobante || {}
+      try {
+        if (f.comprobante?.cae && m?.cae && f.comprobante.cae === m.cae) return true
+        if (f.comprobante?.puntoVenta && f.comprobante?.numero && m?.puntoVenta && m?.numero && f.emisor?.cuit && m?.emisor?.cuit) {
+          if (f.comprobante.puntoVenta === m.puntoVenta && f.comprobante.numero === m.numero && f.emisor.cuit === m.emisor.cuit) return true
+        }
+      } catch (e) {}
+      return false
+    })
+
+    if (duplicate) {
+      // avoid creating duplicated alerts for same document
+      const existing = alertasService.getAll().find(a => a.relacionadoCon?.documento === duplicate.id && a.tipo === 'factura')
+      if (!existing) {
+        alertasService.create({
+          titulo: 'Factura duplicada detectada',
+          descripcion: `Se detectó una factura que parece duplicada (archivo existente: ${duplicate.name}). Revise CAE/numero/punto de venta.`,
+          tipo: 'factura',
+          criticidad: 'alta',
+          cuit: f.emisor?.cuit || f.receptor?.cuit,
+          relacionadoCon: { documento: duplicate.id }
+        })
+      }
+    }
+
+    // CUIT inconsistency: compare parsed receptor/emisor CUIT with known records
+    try {
+      const clientes = await clientesService.list()
+      const proveedores = await proveedoresService.list()
+
+      if (f.receptor?.razonSocial && f.receptor?.cuit) {
+        const match = clientes.find(c => c.razon_social?.toLowerCase?.() === f.receptor.razonSocial?.toLowerCase?.())
+        if (match && match.cuit && match.cuit !== f.receptor.cuit) {
+          const already = alertasService.getAll().find(a => a.tipo === 'factura' && a.descripcion?.includes('CUIT receptor') && a.cuit === f.receptor.cuit)
+          if (!already) {
+            alertasService.create({
+              titulo: 'CUIT inconsistente (receptor)',
+              descripcion: `La factura indica CUIT ${f.receptor.cuit} para "${f.receptor.razonSocial}", que difiere del registro del cliente (${match.cuit}).`,
+              tipo: 'factura',
+              criticidad: 'alta',
+              cuit: f.receptor.cuit,
+              cliente: match.razon_social
+            })
+          }
+        }
+      }
+
+      if (f.emisor?.razonSocial && f.emisor?.cuit) {
+        const matchP = proveedores.find(p => p.razon_social?.toLowerCase?.() === f.emisor.razonSocial?.toLowerCase?.())
+        if (matchP && matchP.cuit && matchP.cuit !== f.emisor.cuit) {
+          const already = alertasService.getAll().find(a => a.tipo === 'factura' && a.descripcion?.includes('CUIT emisor') && a.cuit === f.emisor.cuit)
+          if (!already) {
+            alertasService.create({
+              titulo: 'CUIT inconsistente (emisor)',
+              descripcion: `La factura indica CUIT ${f.emisor.cuit} para "${f.emisor.razonSocial}", que difiere del registro del proveedor (${matchP.cuit}).`,
+              tipo: 'factura',
+              criticidad: 'media',
+              cuit: f.emisor.cuit,
+              proveedor: matchP.razon_social
+            })
+          }
+        }
+      }
+    } catch (e) {
+      // ignore client/provider check errors
+    }
+  } catch (e) {
+    // ignore document listing errors
+  }
+
   // Save original file in documentosService (mock)
   if (file) {
     await documentosService.saveDocument(file, f)

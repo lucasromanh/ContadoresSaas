@@ -5,6 +5,7 @@ import { RechartsChart } from '../../components/charts/RechartsChart'
 import { TremorChart } from '../../components/charts/TremorChart'
 import { useDashboard } from '../../hooks/useDashboard'
 import { useAppStore } from '../../store/useAppStore'
+import alertasService from '../../pages/Alertas/services/alertasService'
 
 function StatCard({ title, value, to, onClick }: { title: string; value: string; to?: string; onClick?: () => void }) {
   const handle = (e: React.MouseEvent) => {
@@ -38,6 +39,8 @@ export const DashboardPage: React.FC = () => {
   const ranking = data?.ranking ?? []
   const estado = data?.estado ?? null
   const alertas = data?.alertas ?? []
+  // also fetch counts from the alertas service to show a quick summary
+  const alertCounts = alertasService.getCounts()
 
   return (
     <div className="space-y-6">
@@ -87,15 +90,15 @@ export const DashboardPage: React.FC = () => {
         </Card>
 
         <Card title="Alertas">
-          {alertas.length === 0 ? (
-            <div className="text-sm text-slate-500">Sin alertas</div>
-          ) : (
-            <ul className="space-y-2">
-              {alertas.map((a: any, i: number) => (
-                <li key={i} className="text-sm text-amber-700 dark:text-amber-300">• {a}</li>
-              ))}
-            </ul>
-          )}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xl font-semibold">{alertCounts.total} alertas</div>
+              <div className="text-sm text-slate-500">{alertCounts.pendientes} pendientes • {alertCounts.urgentes} urgentes</div>
+            </div>
+            <div>
+              <a href="/alertas" className="text-sm text-blue-600 hover:underline">Ver alertas</a>
+            </div>
+          </div>
         </Card>
       </div>
 

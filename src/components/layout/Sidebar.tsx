@@ -19,6 +19,7 @@ export const Sidebar: React.FC = () => {
 
   const user = useUserStore((s) => s.user)
   const [unread, setUnread] = useState<number>(0)
+  const [pulse, setPulse] = useState(false)
 
   useEffect(() => {
     let mounted = true
@@ -31,6 +32,8 @@ export const Sidebar: React.FC = () => {
       try{
         const counts = alertasService.getCounts()
         if (mounted) setUnread(counts.pendientes + counts.urgentes)
+        // trigger a short pulse animation on the badge
+        try{ setPulse(true); setTimeout(()=>setPulse(false), 1200) }catch(e){}
         // play a subtle sound on new alert
         try{
           if (typeof window !== 'undefined' && 'AudioContext' in window){
@@ -83,7 +86,7 @@ export const Sidebar: React.FC = () => {
           <NavLink to="/alertas" className={({ isActive }) => cn('block p-2 rounded transition-colors text-sm', isActive ? 'bg-slate-100 text-slate-900 font-semibold dark:bg-slate-800 dark:text-slate-100' : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800')}>
             <div className="flex items-center justify-between">
               <span>Alertas</span>
-              {unread > 0 && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100">{unread}</span>}
+              {unread > 0 && <span className={cn('ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100', pulse ? 'animate-pulse' : '')}>{unread}</span>}
             </div>
           </NavLink>
         </nav>
