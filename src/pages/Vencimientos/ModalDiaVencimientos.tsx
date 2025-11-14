@@ -19,7 +19,7 @@ export default function ModalDiaVencimientos({ date, items, onClose, onMark, onV
 
         <div className="space-y-2 max-h-[60vh] overflow-auto">
           {items.map(it => (
-            <div key={it.id} className="p-2 border rounded bg-white/50 dark:bg-slate-900 flex items-start justify-between">
+            <div key={it.id} className="p-2 border rounded bg-slate-100 dark:bg-slate-900 flex items-start justify-between">
               <div className="min-w-0">
                 <div className="text-sm font-semibold truncate">{it.descripcion}</div>
                 <div className="text-xs text-slate-500 truncate">{it.tipo} • {it.organismo} • {it.cliente} — {it.cuit}</div>

@@ -1,6 +1,7 @@
 import mockData from '../mocks/vencimientosMock'
 import riesgoService from '../../RiesgoFiscal/services/riesgoService'
 import dashboardService from '../../../services/dashboardService'
+import alertasService from '../../Alertas/services/alertasService'
 
 const STORAGE_KEY = 'vencimientos_store_v1'
 
@@ -77,6 +78,27 @@ export function checkAndAlertOverdue(){
       s.estado = 'vencido'
       // create alert in riesgo service
       riesgoService.addAlerta({ tipo: 'sin_documentacion', cuit: s.cuit || '', cliente: s.cliente || '', descripcion: `Vencimiento ${s.descripcion} vencido el ${s.fecha}`, criticidad: 'alta', fecha: new Date().toISOString().slice(0,10), estado: 'pendiente' })
+      // create unified alerta in alertasService
+      // avoid duplicate alerta for same vencimiento
+      const existing = alertasService.getAll().find(a => a.relacionadoCon?.vencimientoId === s.id && a.tipo === 'vencimiento' && a.descripcion.includes('venció'))
+      if (!existing) {
+        alertasService.create({ titulo: `Vencimiento vencido: ${s.descripcion}`, descripcion: `El vencimiento ${s.descripcion} para ${s.cliente || s.cuit} venció el ${s.fecha}`, tipo: 'vencimiento', fecha: new Date().toISOString(), estado: 'pendiente', criticidad: 'alta', cuit: s.cuit, cliente: s.cliente, relacionadoCon: { vencimientoId: s.id } })
+      }
+    }
+  })
+  // preventive alerts: if pendiente and within 3 days, create a preventive alerta
+  const today = new Date().toISOString().slice(0,10)
+  store.forEach(s=>{
+    if (s.estado === 'pendiente'){
+      const d = new Date(s.fecha)
+      const nowDate = new Date(today)
+      const diffDays = Math.ceil((d.getTime() - nowDate.getTime())/(1000*60*60*24))
+      if (diffDays>0 && diffDays<=3){
+        const exists = alertasService.getAll().find(a => a.relacionadoCon?.vencimientoId === s.id && a.tipo === 'vencimiento' && a.descripcion.includes('Quedan'))
+        if (!exists) {
+          alertasService.create({ titulo: `Vencimiento próximo: ${s.descripcion}`, descripcion: `Quedan ${diffDays} día(s) para el vencimiento ${s.descripcion} de ${s.cliente || s.cuit}`, tipo: 'vencimiento', fecha: new Date().toISOString(), estado: 'pendiente', criticidad: diffDays===1? 'alta':'media', cuit: s.cuit, cliente: s.cliente, relacionadoCon: { vencimientoId: s.id } })
+        }
+      }
     }
   })
   persist()

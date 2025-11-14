@@ -91,6 +91,12 @@ export async function resolverAlerta(id: string) {
 export function addAlerta(a: Omit<AlertaFiscal, 'id'>) {
   const alerta: AlertaFiscal = { id: generateId(), ...a }
   store = [alerta, ...store]
+  try{
+    // mirror to global alertasService for UI visibility (dynamic import to avoid circular deps)
+    import('../../Alertas/services/alertasService').then((m)=>{
+      try{ m.default.create({ titulo: alerta.descripcion, descripcion: alerta.descripcion, tipo: 'riesgo_fiscal', fecha: alerta.fecha, estado: 'pendiente', criticidad: alerta.criticidad, cuit: alerta.cuit, cliente: alerta.cliente }) }catch(e){}
+    })
+  }catch(e){}
   return alerta
 }
 

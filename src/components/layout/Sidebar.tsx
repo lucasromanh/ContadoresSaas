@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom'
 import { cn } from '../../lib/utils'
 import { useUserStore } from '../../store/useUserStore'
 import ProfileCard from '../ui/ProfileCard'
-import { alertService } from '../../services/alertService'
+import alertasService from '../../pages/Alertas/services/alertasService'
 
 export const Sidebar: React.FC = () => {
   const links = [
@@ -22,9 +22,39 @@ export const Sidebar: React.FC = () => {
 
   useEffect(() => {
     let mounted = true
-    alertService.getUnreadCount().then((c) => mounted && setUnread(c)).catch(() => {})
+    try{
+      const counts = alertasService.getCounts()
+      if (mounted) setUnread(counts.pendientes + counts.urgentes)
+    }catch(e){}
+
+    const handler = (ev: any) => {
+      try{
+        const counts = alertasService.getCounts()
+        if (mounted) setUnread(counts.pendientes + counts.urgentes)
+        // play a subtle sound on new alert
+        try{
+          if (typeof window !== 'undefined' && 'AudioContext' in window){
+            const ctx: any = new (window as any).AudioContext()
+            const o = ctx.createOscillator()
+            const g = ctx.createGain()
+            o.type = 'sine'
+            o.frequency.setValueAtTime(880, ctx.currentTime)
+            g.gain.setValueAtTime(0.0001, ctx.currentTime)
+            o.connect(g); g.connect(ctx.destination)
+            o.start()
+            g.gain.exponentialRampToValueAtTime(0.1, ctx.currentTime + 0.01)
+            g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16)
+            setTimeout(()=>{ o.stop(); try{ ctx.close() }catch(e){} }, 180)
+          }
+        }catch(e){}
+      }catch(e){}
+    }
+
+    alertasService.emitter.addEventListener('new-alert', handler)
+
     return () => {
       mounted = false
+      try{ alertasService.emitter.removeEventListener('new-alert', handler) }catch(e){}
     }
   }, [])
 
