@@ -36,10 +36,11 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
   useEffect(()=>{ if (open) perfilService.getFresh().then(p=>{ setPerfil(p); form.reset(p as any) }) }, [open])
 
   const save = async (values: PerfilForm) => {
-    // validate teléfono argentino minimal: digits >= 10 (incluye 54)
+    // validate teléfono argentino minimal: digits between 10 and 13 (allow +54, country code etc.)
     const tel = values.contacto.telefonoPersonal || ''
-    if (values.contacto.telefonoPersonal && telefonoDigits(tel) < 10) {
-      form.setError('contacto.telefonoPersonal' as any, { type: 'manual', message: 'Número inválido. Usa formato argentino, p.ej. +54 9 11 1234 5678' } as any)
+    const digits = telefonoDigits(tel)
+    if (values.contacto.telefonoPersonal && (digits < 10 || digits > 13)) {
+      form.setError('contacto.telefonoPersonal' as any, { type: 'manual', message: 'Número inválido. Debe incluir código de país (opcional) y tener entre 10 y 13 dígitos.' } as any)
       return
     }
     const updated = await perfilService.update(values as any)

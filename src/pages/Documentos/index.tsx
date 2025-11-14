@@ -101,11 +101,10 @@ export const DocumentosPage: React.FC = () => {
         console.warn('Error guardando documento', err)
       }
     }
-    // reload list
-    const list = await documentosService.listDocuments()
-    setDocumentos(list)
-    // clear input
-    (e.target as HTMLInputElement).value = ''
+  // reload list
+  setDocumentos(await documentosService.listDocuments());
+  // clear input
+  (e.target as HTMLInputElement).value = ''
   }
 
   // local modal states

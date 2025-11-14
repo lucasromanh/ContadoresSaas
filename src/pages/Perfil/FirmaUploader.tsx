@@ -23,6 +23,7 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
       ctx.setTransform(1,0,0,1,0,0)
       ctx.scale(dpr, dpr)
       ctx.clearRect(0,0,rect.width, rect.height)
+      // line width should be in CSS pixels; multiply by 1 for clarity
       ctx.lineWidth = 2
       ctx.lineCap = 'round'
       ctx.strokeStyle = '#000'
@@ -33,36 +34,66 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
     return () => window.removeEventListener('resize', resize)
   }, [])
 
-  const start = (e: React.MouseEvent) => {
-    const c = canvasRef.current; if (!c) return
-    const ctx = c.getContext('2d'); if (!ctx) return
+  // pointer-based drawing (works for mouse & touch)
+  const getPos = (e: PointerEvent | React.PointerEvent) => {
+    const c = canvasRef.current
+    if (!c) return { x: 0, y: 0 }
     const rect = c.getBoundingClientRect()
-    ctx.beginPath()
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top)
-    setDrawing(true)
+    // use CSS pixels — context is scaled by DPR already
+    return { x: (e as any).clientX - rect.left, y: (e as any).clientY - rect.top }
   }
-  const move = (e: React.MouseEvent) => {
-    if (!drawing) return
-    const c = canvasRef.current; if (!c) return
-    const ctx = c.getContext('2d'); if (!ctx) return
-    const rect = c.getBoundingClientRect()
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top)
-    ctx.stroke()
-  }
-  const end = async () => {
-    if (!drawing) { setDrawing(false); return }
-    setDrawing(false)
-    const c = canvasRef.current; if (!c) return
-    // export as PNG at device pixel ratio for quality
-    const data = c.toDataURL('image/png')
-    setPreview(data)
-    onChange(data)
-  }
+
+  useEffect(()=>{
+    const c = canvasRef.current
+    if (!c) return
+    const ctx = c.getContext('2d')
+    if (!ctx) return
+
+    let isDown = false
+
+    const onPointerDown = (ev: PointerEvent) => {
+      isDown = true
+      const p = getPos(ev as any)
+      ctx.beginPath()
+      ctx.moveTo(p.x, p.y)
+      setDrawing(true)
+      // capture pointer to continue receiving events
+      try{ (ev.target as Element).setPointerCapture(ev.pointerId) }catch(e){}
+    }
+    const onPointerMove = (ev: PointerEvent) => {
+      if (!isDown) return
+      const p = getPos(ev as any)
+      ctx.lineTo(p.x, p.y)
+      ctx.stroke()
+    }
+    const onPointerUp = (ev: PointerEvent) => {
+      if (!isDown) return
+      isDown = false
+      setDrawing(false)
+      try{ (ev.target as Element).releasePointerCapture(ev.pointerId) }catch(e){}
+      // export
+      const data = c.toDataURL('image/png')
+      setPreview(data)
+      onChange(data)
+    }
+
+    c.addEventListener('pointerdown', onPointerDown)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+
+    return () => {
+      try{ c.removeEventListener('pointerdown', onPointerDown) }catch(e){}
+      try{ window.removeEventListener('pointermove', onPointerMove) }catch(e){}
+      try{ window.removeEventListener('pointerup', onPointerUp) }catch(e){}
+    }
+  }, [])
 
   const clear = ()=>{
     const c = canvasRef.current; if (!c) return
     const ctx = c.getContext('2d'); if (!ctx) return
-    ctx.clearRect(0,0,c.width,c.height)
+    // clear using CSS size (context is scaled)
+    const rect = c.getBoundingClientRect()
+    ctx.clearRect(0,0,rect.width, rect.height)
     setPreview(undefined)
     onChange('')
   }
@@ -75,7 +106,7 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
   return (
     <div className="space-y-2">
       <div className="border rounded p-2">
-        <canvas ref={canvasRef} onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={()=> end()} className="w-full h-48 bg-white" />
+        <canvas ref={canvasRef} className="w-full h-48 bg-white" />
       </div>
       <div className="flex gap-2">
         <input type="file" accept="image/*" onChange={uploadFile} />
