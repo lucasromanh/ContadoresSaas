@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { Card } from '../../components/ui/Card'
+import { Button } from '../../components/ui/Button'
 import alertasService, { Alerta } from './services/alertasService'
 import ListadoAlertas from './ListadoAlertas'
 import FiltrosAlertas from './FiltrosAlertas'
@@ -14,6 +15,7 @@ export default function AlertasPage(){
   const [showCreate, setShowCreate] = useState(false)
   const [showSend, setShowSend] = useState(false)
   const [sendCliente, setSendCliente] = useState<string|undefined>(undefined)
+  const [showResueltas, setShowResueltas] = useState(false)
 
   useEffect(()=>{
     alertasService.loadMock().then(d=> setItems(d))
@@ -66,15 +68,16 @@ export default function AlertasPage(){
               <div className="text-sm text-red-600">Urgentes: <span className="font-semibold">{items.filter(i=>i.estado==='urgente').length}</span></div>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={markAllRead} className="px-3 py-1 border rounded">Marcar todo leído</button>
-              <button onClick={()=>setShowCreate(true)} className="btn-primary px-3 py-1">Crear alerta</button>
+              <Button variant="outline" onClick={markAllRead}>Marcar todo leído</Button>
+              <Button variant="ghost" onClick={()=> setShowResueltas(v=>!v)}>{showResueltas ? 'Ocultar resueltas' : 'Ver resueltas'}</Button>
+              <Button variant="success" onClick={()=>setShowCreate(true)}>Crear alerta</Button>
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <ListadoAlertas items={filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} />
+            <ListadoAlertas items={showResueltas ? items.filter(i=>i.estado==='resuelta') : filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} />
           </div>
           <div>
             <h3 className="text-sm font-medium mb-2">Resumen</h3>
