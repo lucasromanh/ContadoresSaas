@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { ocrFile } from './ocrService'
 import OCRResultModal from './OCRResultModal'
+import { toastSuccess } from '../../components/ui'
 import { saveFactura } from './facturasService'
 
 export default function OCRUploader(){
@@ -32,7 +33,7 @@ export default function OCRUploader(){
       <label className="block mb-2">Subir factura / ticket</label>
       <input type="file" accept="image/*,application/pdf" onChange={e=>handleFile(e.target.files?.[0]||null)} />
       {loading && <div className="text-sm text-gray-500">Procesando...</div>}
-      <OCRResultModal open={open} onClose={()=>setOpen(false)} parsed={result} onSave={(p)=>{ saveFactura(p); setOpen(false); alert('Guardado') }} />
+  <OCRResultModal open={open} onClose={()=>setOpen(false)} parsed={result} onSave={(p)=>{ saveFactura(p); setOpen(false); toastSuccess('Guardado') }} />
     </div>
   )
 }

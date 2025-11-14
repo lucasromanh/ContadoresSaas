@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Dialog } from '../../components/ui/Dialog'
 import { Button } from '../../components/ui/Button'
+import { toastError, toastSuccess } from '../../components/ui'
 import sueldosService from '../../services/sueldosService'
 import Input from '../../components/ui/Input'
 
@@ -13,14 +14,14 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
   const [showFull, setShowFull] = useState(false)
 
   const handleProcess = async () => {
-    if (!file) return alert('Sube un archivo primero')
+    if (!file) return toastError('Sube un archivo primero')
     setProcessing(true)
     setProgress(10)
     try{
       const res = await sueldosService.processFile(file, { asociadoA: empleado })
       setProgress(80)
       if ((res as any).error){
-        alert('Error al parsear: '+ (res as any).error)
+        toastError('Error al parsear: '+ (res as any).error)
         setProcessing(false)
         setProgress(0)
         return
@@ -31,7 +32,7 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
     }catch(e){
       console.error('Error procesando archivo', e)
       const s = String(e || '')
-      alert('Error procesando archivo: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
+      toastError('Error procesando archivo: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
     }finally{ setProcessing(false); setProgress(0) }
   }
 
@@ -48,7 +49,7 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
     }catch(e){
       console.error('Error guardando recibo', e)
       const s = String(e || '')
-      alert('Error guardando: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
+      toastError('Error guardando: ' + (s.length > 400 ? s.slice(0,400) + '... (truncado, ver consola)' : s))
     }finally{ setProcessing(false) }
   }
 
@@ -81,7 +82,7 @@ export default function SubirReciboModal({ open, onClose, onProcessed }: { open:
                     {txt.length > limit && (
                       <div className="mt-2 flex gap-2">
                         <Button variant="outline" onClick={() => setShowFull(s => !s)}>{showFull ? 'Ocultar' : 'Mostrar completo'}</Button>
-                        <Button variant="ghost" onClick={() => { navigator.clipboard?.writeText(txt); alert('JSON copiado al portapapeles') }}>Copiar JSON</Button>
+                        <Button variant="ghost" onClick={() => { navigator.clipboard?.writeText(txt); toastSuccess('JSON copiado al portapapeles') }}>Copiar JSON</Button>
                       </div>
                     )}
                   </>

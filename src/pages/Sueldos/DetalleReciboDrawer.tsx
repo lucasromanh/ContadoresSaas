@@ -1,6 +1,7 @@
 import React from 'react'
 import { Dialog } from '../../components/ui/Dialog'
 import { Button } from '../../components/ui/Button'
+import { toastInfo, toastError } from '../../components/ui'
 
 export default function DetalleReciboDrawer({ open, onClose, recibo }:{ open:boolean; onClose:()=>void; recibo?: any }){
   if (!open || !recibo) return null
@@ -48,15 +49,15 @@ export default function DetalleReciboDrawer({ open, onClose, recibo }:{ open:boo
         <div className="flex justify-end gap-2">
           <Button onClick={()=> {
             const url = recibo.archivoOriginalUrl || ''
-            if (!url) return alert('No hay archivo original disponible')
+            if (!url) return toastInfo('No hay archivo original disponible')
             if (typeof url === 'string' && url.startsWith('data:')){
               window.open(url, '_blank')
             } else if (typeof url === 'string' && url.startsWith('file:')){
               // we stored a lightweight reference for large files instead of inlining base64
               const name = url.replace(/^file:/,'')
-              alert('Archivo guardado como referencia: ' + name)
+              toastInfo('Archivo guardado como referencia: ' + name)
             } else {
-              try{ window.open(url, '_blank') }catch(e){ alert('No se puede abrir el archivo') }
+              try{ window.open(url, '_blank') }catch(e){ toastError('No se puede abrir el archivo') }
             }
           }}>Ver original</Button>
           <Button variant="outline" onClick={onClose}>Cerrar</Button>

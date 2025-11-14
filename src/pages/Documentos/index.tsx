@@ -3,6 +3,7 @@ import { Card } from '../../components/ui/Card'
 import SmartTable from '../../components/ui/SmartTable'
 import { useClientes } from '../../hooks/useClientes'
 import documentosService from '../../services/documentosService'
+import { toastError } from '../../components/ui'
 import { useLocation } from 'react-router-dom'
 
 export const DocumentosPage: React.FC = () => {
@@ -55,7 +56,7 @@ export const DocumentosPage: React.FC = () => {
   // view / edit / delete handlers
   const handleView = async (id: string) => {
     const doc = (documentos || []).find(d=>d.id===id)
-    if (!doc) return alert('Documento no encontrado')
+    if (!doc) return toastError('Documento no encontrado')
     setViewDoc(doc)
     setShowView(true)
   }
@@ -69,7 +70,7 @@ export const DocumentosPage: React.FC = () => {
 
   const handleEdit = async (id: string) => {
     const doc = (documentos || []).find(d=>d.id===id)
-    if (!doc) return alert('Documento no encontrado')
+    if (!doc) return toastError('Documento no encontrado')
     setEditDoc(doc)
     setShowEdit(true)
   }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useClientes } from '../../hooks/useClientes'
+import { toastInfo } from '../../components/ui'
 
 export default function GeneradorAlertas({ onClose, initialCliente }: { onClose: ()=>void; initialCliente?: string }){
   const [canal, setCanal] = useState<'whatsapp'|'email'|'interna'>('whatsapp')
@@ -15,7 +16,7 @@ export default function GeneradorAlertas({ onClose, initialCliente }: { onClose:
     // simulate sending to selected client
     const target = (clientes || []).find((c:any)=> (c.razon_social || c.nombre) === destino)
     const targetLabel = target ? `${target.razon_social || target.nombre} (${target.cuit || '-'})` : destino || 'Sin destinatario'
-    alert(`Enviando a: ${targetLabel}\nCanal: ${canal}\n\n${mensaje}`)
+  toastInfo(`Enviando a: ${targetLabel}\nCanal: ${canal}\n\n${mensaje}`)
     onClose()
   }
 

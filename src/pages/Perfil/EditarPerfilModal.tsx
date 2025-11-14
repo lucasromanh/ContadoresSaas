@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Dialog } from '../../components/ui/Dialog'
 import { Button } from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
+import { toastSuccess, toastInfo } from '../../components/ui'
 import perfilService from '../../services/perfilService'
 import { PerfilContador } from '../../types/perfil'
 import { useForm } from 'react-hook-form'
@@ -203,8 +204,8 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
 
             {tab===5 && (
               <div className="space-y-2">
-                <Button onClick={()=> alert('2FA simulado activado')}>Habilitar 2FA (simulado)</Button>
-                <Button variant="ghost" onClick={()=> alert('Cambiar contraseña (placeholder)')}>Cambiar contraseña</Button>
+                <Button onClick={()=> toastSuccess('2FA simulado activado')}>Habilitar 2FA (simulado)</Button>
+                <Button variant="ghost" onClick={()=> toastInfo('Cambiar contraseña (placeholder)')}>Cambiar contraseña</Button>
               </div>
             )}
 

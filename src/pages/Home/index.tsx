@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
+import Input from '../../components/ui/Input'
+import { toastSuccess, toastError } from '../../components/ui'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store/useUserStore'
 import useAppStore from '../../store/useAppStore'
@@ -126,6 +128,58 @@ export const HomePage: React.FC = () => {
                 <div className="text-sm text-slate-500">Confirmá y guardá en libros IVA o exportá datos a tu contabilidad.</div>
               </Card>
             </div>
+          </section>
+
+          <section className="mt-10">
+            <Card className="p-4 bg-gradient-to-r from-violet-900 to-blue-900 text-white">
+              <h3 className="text-lg font-semibold mb-2">Lanzamiento Beta — Acceso anticipado</h3>
+              <p className="text-sm text-white/90 mb-4">Estamos armando un programa de acceso anticipado para contadores: sumate y ayudanos a prioritizar nuevas funcionalidades pensadas por y para profesionales contables.</p>
+
+              <div className="border-t border-white/20 pt-4">
+                <div className="mb-3 text-sm font-medium">Sumate a la lista de espera y contanos qué te gustaría que agreguemos</div>
+                <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <Input placeholder="Nombre y apellido" id="wait_name" />
+                    <Input placeholder="Email (ej: juan@ejemplo.com)" id="wait_email" />
+                  </div>
+                  <textarea id="wait_message" placeholder="Ejemplos: conciliación bancaria automática, conciliador de pagos con bancos, workflows de aprobación para recibos, plantillas de reportes PDF, auditoría y logs por usuario" className="w-full p-2 border rounded text-sm bg-white/90 text-black" rows={4} />
+                  <div className="flex items-center gap-3">
+                    <input type="checkbox" id="wait_join" />
+                    <label htmlFor="wait_join" className="text-sm">Quiero unirme a la lista de espera</label>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Button onClick={() => {
+                      try{
+                        const nameEl = document.getElementById('wait_name') as HTMLInputElement | null
+                        const emailEl = document.getElementById('wait_email') as HTMLInputElement | null
+                        const msgEl = document.getElementById('wait_message') as HTMLTextAreaElement | null
+                        const joinEl = document.getElementById('wait_join') as HTMLInputElement | null
+                        const name = nameEl?.value?.trim() || ''
+                        const email = emailEl?.value?.trim() || ''
+                        const message = msgEl?.value?.trim() || ''
+                        const join = !!(joinEl && joinEl.checked)
+                        // basic validation for email
+                        const emailRx = /^\S+@\S+\.\S+$/
+                        if (email && !emailRx.test(email)) return toastError('Ingresá un email válido')
+                        if (!name && !email && !message) return toastError('Completá al menos un campo para sumarte o contarnos algo')
+                        const item = { id: 'w_' + Date.now().toString(36), nombre: name, email, mensaje: message, join, createdAt: new Date().toISOString() }
+                        const raw = localStorage.getItem('waitlist_v1')
+                        const arr = raw ? JSON.parse(raw) : []
+                        arr.push(item)
+                        localStorage.setItem('waitlist_v1', JSON.stringify(arr))
+                        // clear form
+                        if (nameEl) nameEl.value = ''
+                        if (emailEl) emailEl.value = ''
+                        if (msgEl) msgEl.value = ''
+                        if (joinEl) joinEl.checked = false
+                        toastSuccess('Gracias — te agregamos a la lista de espera')
+                      }catch(e){ console.error(e); toastError('No se pudo guardar la solicitud en este navegador') }
+                    }}>Enviar</Button>
+                    <Button variant="outline" onClick={() => { const raw = localStorage.getItem('waitlist_v1') || '[]'; try{ navigator.clipboard?.writeText(raw); toastSuccess('Contenido copiado al portapapeles') }catch(e){ toastError('No se pudo copiar') } }}>Copiar datos (dev)</Button>
+                  </div>
+                </form>
+              </div>
+            </Card>
           </section>
 
           <section className="mt-10">
