@@ -18,6 +18,7 @@ import AlertasPage from './pages/Alertas'
 import IngresosDetallePage from './pages/Ingresos/Detalle'
 import CostosDetallePage from './pages/Costos/Detalle'
 import MargenDetallePage from './pages/Margen/Detalle'
+import { LectorFacturasPage } from './pages/LectorFacturas/LectorFacturas'
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="ingresos/detalle" element={<IngresosDetallePage />} />
         <Route path="costos/detalle" element={<CostosDetallePage />} />
         <Route path="margen/detalle" element={<MargenDetallePage />} />
+  <Route path="lector-facturas" element={<LectorFacturasPage />} />
         <Route path="documentos" element={<DocumentosPage />} />
         <Route path="alertas" element={<AlertasPage />} />
       </Route>
