@@ -7,6 +7,8 @@ import Input from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import proveedoresService from '../../services/proveedoresService'
 
+import PageContainer from '../../components/layout/PageContainer'
+
 export const ProveedoresPage: React.FC = () => {
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -44,7 +46,8 @@ export const ProveedoresPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <PageContainer>
+      <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Proveedores</h2>
         <div>
@@ -130,7 +133,8 @@ export const ProveedoresPage: React.FC = () => {
           </Form>
         </Dialog>
       )}
-    </div>
+      </div>
+    </PageContainer>
   )
 }
 

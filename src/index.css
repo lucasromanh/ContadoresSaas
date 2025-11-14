@@ -19,3 +19,35 @@ body {
 .container {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
+
+/* Responsive text wrapping and media safeguards */
+main, .container, .page-container {
+  word-break: break-word; /* allow long words to wrap */
+  overflow-wrap: anywhere;
+}
+
+img, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+pre, code {
+  white-space: pre-wrap; /* preserve formatting but wrap long lines */
+  word-break: break-word;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  table-layout: auto;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+/* ensure that long inline elements inside cards/containers wrap */
+.break-inside-fix {
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}

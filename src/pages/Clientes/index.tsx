@@ -83,6 +83,8 @@ const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (
   )
 }
 
+import PageContainer from '../../components/layout/PageContainer'
+
 export const ClientesPage: React.FC = () => {
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -120,7 +122,8 @@ export const ClientesPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-4">
+    <PageContainer>
+      <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Clientes</h2>
         <div>
@@ -165,7 +168,8 @@ export const ClientesPage: React.FC = () => {
         </Dialog>
       )}
       {detailId && <ClienteDetail id={detailId} open={!!detailId} onOpenChange={(v) => !v && setDetailId(null)} />}
-    </div>
+      </div>
+    </PageContainer>
   )
 }
 

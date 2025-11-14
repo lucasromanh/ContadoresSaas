@@ -6,6 +6,7 @@ import { TremorChart } from '../../components/charts/TremorChart'
 import { useDashboard } from '../../hooks/useDashboard'
 import { useAppStore } from '../../store/useAppStore'
 import alertasService from '../../pages/Alertas/services/alertasService'
+import PageContainer from '../../components/layout/PageContainer'
 
 function StatCard({ title, value, to, onClick }: { title: string; value: string; to?: string; onClick?: () => void }) {
   const handle = (e: React.MouseEvent) => {
@@ -43,84 +44,87 @@ export const DashboardPage: React.FC = () => {
   const alertCounts = alertasService.getCounts()
 
   return (
-    <div className="space-y-6">
-      {!isBackendOnline && (
-        <div className="p-3 rounded-md bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 border border-amber-200 dark:border-amber-700">
-          Backend no disponible — mostrando datos de ejemplo (mock)
-        </div>
-      )}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <StatCard title="Ingresos" value={ingresos} to="/ingresos/detalle" />
-        <StatCard title="Costos" value={costos} to="/costos/detalle" />
-        <StatCard title="Margen" value={margen} to="/margen/detalle" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card title="Flujo de caja mensual">
-          <RechartsChart />
-        </Card>
-        <TremorChart />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card title="Ranking de clientes">
-          {ranking.length === 0 ? (
-            <div className="text-sm text-slate-500">Sin datos</div>
-          ) : (
-            <ul className="space-y-2">
-              {ranking.map((r: any, i: number) => (
-                <li key={i} className="flex items-center justify-between">
-                  <a className="font-medium text-blue-600 hover:underline" href="/clientes">{r.name ?? r.nombre ?? 'Cliente'}</a>
-                  <div className="text-sm text-slate-600">{r.value ?? r.monto ?? '-'}</div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card title="Estado anual">
-          {estado ? (
-            <div className="space-y-1 text-sm">
-              <div>Año: <span className="font-medium">{estado.año ?? estado.year ?? '-'}</span></div>
-              <div>Saldo: <span className="font-medium">{estado.saldo ?? estado.balance ?? '-'}</span></div>
-            </div>
-          ) : (
-            <div className="text-sm text-slate-500">Sin datos</div>
-          )}
-        </Card>
-
-        <Card title="Alertas">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-xl font-semibold">{alertCounts.total} alertas</div>
-              <div className="text-sm text-slate-500">{alertCounts.pendientes} pendientes • {alertCounts.urgentes} urgentes</div>
-            </div>
-            <div>
-              <a href="/alertas" className="text-sm text-blue-600 hover:underline">Ver alertas</a>
-            </div>
+    <PageContainer>
+      <div className="space-y-6">
+        {!isBackendOnline && (
+          <div className="p-3 rounded-md bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 border border-amber-200 dark:border-amber-700">
+            Backend no disponible — mostrando datos de ejemplo (mock)
           </div>
-        </Card>
-      </div>
+        )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        <Card title="Próximos vencimientos">
-          {data?.proximos && data.proximos.length > 0 ? (
-            <ul className="space-y-2 text-sm">
-              {data.proximos.map((p: any, i: number) => (
-                <li key={i} className="flex items-center justify-between">
-                  <div>
-                    <div className="font-medium">{p.cliente ?? p.descripcion}</div>
-                    <div className="text-xs text-slate-500">{p.fecha} • {p.tipo}</div>
-                  </div>
-                  <div className="text-sm text-slate-600">{p.estado}</div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <div className="text-sm text-slate-500">Sin vencimientos próximos</div>
-          )}
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <StatCard title="Ingresos" value={ingresos} to="/ingresos/detalle" />
+          <StatCard title="Costos" value={costos} to="/costos/detalle" />
+          <StatCard title="Margen" value={margen} to="/margen/detalle" />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Card title="Flujo de caja mensual">
+            <RechartsChart />
+          </Card>
+          <TremorChart />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card title="Ranking de clientes">
+            {ranking.length === 0 ? (
+              <div className="text-sm text-slate-500">Sin datos</div>
+            ) : (
+              <ul className="space-y-2">
+                {ranking.map((r: any, i: number) => (
+                  <li key={i} className="flex items-center justify-between">
+                    <a className="font-medium text-blue-600 hover:underline" href="/clientes">{r.name ?? r.nombre ?? 'Cliente'}</a>
+                    <div className="text-sm text-slate-600">{r.value ?? r.monto ?? '-'}</div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+
+          <Card title="Estado anual">
+            {estado ? (
+              <div className="space-y-1 text-sm">
+                <div>Año: <span className="font-medium">{estado.año ?? estado.year ?? '-'}</span></div>
+                <div>Saldo: <span className="font-medium">{estado.saldo ?? estado.balance ?? '-'}</span></div>
+              </div>
+            ) : (
+              <div className="text-sm text-slate-500">Sin datos</div>
+            )}
+          </Card>
+
+          <Card title="Alertas">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="text-xl font-semibold">{alertCounts.total} alertas</div>
+                <div className="text-sm text-slate-500">{alertCounts.pendientes} pendientes • {alertCounts.urgentes} urgentes</div>
+              </div>
+              <div>
+                <a href="/alertas" className="text-sm text-blue-600 hover:underline">Ver alertas</a>
+              </div>
+            </div>
+          </Card>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <Card title="Próximos vencimientos">
+            {data?.proximos && data.proximos.length > 0 ? (
+              <ul className="space-y-2 text-sm">
+                {data.proximos.map((p: any, i: number) => (
+                  <li key={i} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{p.cliente ?? p.descripcion}</div>
+                      <div className="text-xs text-slate-500">{p.fecha} • {p.tipo}</div>
+                    </div>
+                    <div className="text-sm text-slate-600">{p.estado}</div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-sm text-slate-500">Sin vencimientos próximos</div>
+            )}
+          </Card>
+        </div>
       </div>
-    </div>
+    </PageContainer>
   )
 }

@@ -9,6 +9,8 @@ import ComparativaMensual from './ComparativaMensual'
 import GraficosSueldos from './GraficosSueldos'
 import ErroresDetectados from './ErroresDetectados'
 
+import PageContainer from '../../components/layout/PageContainer'
+
 export const SueldosPage: React.FC = () => {
   const [data, setData] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -84,7 +86,8 @@ export const SueldosPage: React.FC = () => {
   }, [recibos])
 
   return (
-    <div className="space-y-4">
+    <PageContainer>
+      <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold">Sueldos</h2>
         <div>
@@ -116,7 +119,8 @@ export const SueldosPage: React.FC = () => {
       {editing && (
         <DetalleReciboDrawer open={!!editing} onClose={()=> setEditing(null)} recibo={editing} />
       )}
-    </div>
+      </div>
+    </PageContainer>
   )
 }
 
