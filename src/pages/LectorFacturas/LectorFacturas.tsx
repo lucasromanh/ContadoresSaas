@@ -75,7 +75,7 @@ export const LectorFacturasPage: React.FC = () => {
 
       <div>
         <h3 className="font-semibold">Historial</h3>
-        <Historial items={historial.map(h=> JSON.stringify(h).slice(0,200))} />
+        <Historial items={historial} />
       </div>
 
       <EditFacturaDialog open={editing} factura={factura} onClose={() => setEditing(false)} onSave={handleEditSave} />
