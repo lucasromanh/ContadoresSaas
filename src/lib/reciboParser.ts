@@ -17,19 +17,32 @@ function buildLines(ocr: OCRResult){
     // group words by approximate y center
     const linesMap: Array<{ y:number; words: Array<{text:string,x:number,x1:number}> }> = []
     for (const w of ocr.words){
+      // sanitize word text to remove control chars and excessive symbol runs
+      const cleanWord = (s: string) => {
+        if (!s) return ''
+        // replace non-printable/control with space
+        let t = String(s).replace(/[^\x20-\x7E\u00A0-\uFFFF]+/g, ' ')
+        // collapse very long runs of non-alphanumeric into a single space
+        t = t.replace(/[^\p{L}\p{N}]+/gu, ' ')
+        // collapse multiple spaces
+        t = t.replace(/\s+/g, ' ').trim()
+        return t
+      }
       const cy = (w.bbox.y0 + w.bbox.y1) / 2
+      const text = cleanWord(String(w.text || ''))
+      if (!text) continue
       let found = false
       for (const l of linesMap){
         if (Math.abs(l.y - cy) < 8){ // 8px tolerance
-          l.words.push({ text: w.text, x: w.bbox.x0, x1: w.bbox.x1 })
+          l.words.push({ text, x: w.bbox.x0, x1: w.bbox.x1 })
           found = true; break
         }
       }
-      if (!found) linesMap.push({ y: cy, words: [{ text: w.text, x: w.bbox.x0, x1: w.bbox.x1 }] })
+      if (!found) linesMap.push({ y: cy, words: [{ text, x: w.bbox.x0, x1: w.bbox.x1 }] })
     }
     // sort lines by y and words by x
     linesMap.sort((a,b)=> a.y - b.y)
-    return linesMap.map(l => l.words.sort((a,b)=>a.x - b.x).map(w=>w.text).join(' '))
+    return linesMap.map(l => l.words.sort((a,b)=>a.x - b.x).map(w=>w.text).join(' ')).map(s=>s.trim()).filter(Boolean)
   }
   // fallback: split text into lines
   return (ocr.text || '').split(/\r?\n/).map(s=>s.trim()).filter(Boolean)
@@ -96,7 +109,14 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
     const money = raw.match(moneyRx)
   const importe = money ? parseAmount(money[money.length-1]) : null
     // description is raw without the amount(s)
-    const desc = raw.replace(moneyRx, '').replace(/^\s*\d{1,4}\s*/,'').trim()
+    let desc = raw.replace(moneyRx, '').replace(/^\s*\d{1,4}\s*/,'').trim()
+    // sanitize description: collapse weird characters and limit length
+    desc = desc.replace(/[^\p{L}\p{N}\s\-\.,:\(\)\/]+/gu, ' ').replace(/\s+/g,' ').trim()
+    const MAX_DESC = 400
+    if (desc.length > MAX_DESC) desc = desc.slice(0, MAX_DESC) + '... (truncado)'
+    // if description is mostly non-alphanumeric, mark as invalid
+    const alphaCount = (desc.match(/[\p{L}\p{N}]/gu) || []).length
+    if (alphaCount < 3) desc = ''
     return { codigo, descripcion: desc || raw, importe }
   }
 
@@ -169,8 +189,8 @@ export function parseReciboFromOCR(ocr: OCRResult, meta?: { filename?: string })
 
   // Map haberes/deducciones into conceptos to match ReciboSueldo type
   const conceptos: Array<any> = []
-  for (const h of haberes) conceptos.push({ codigo: h.codigo || '', descripcion: h.descripcion, haberes: h.importe !== null ? Number(h.importe) : null, deducciones: null })
-  for (const d of deducciones) conceptos.push({ codigo: d.codigo || '', descripcion: d.descripcion, haberes: null, deducciones: d.importe !== null ? Number(d.importe) : null })
+  for (const h of haberes) if (h.descripcion && (h.importe !== null)) conceptos.push({ codigo: h.codigo || '', descripcion: h.descripcion, haberes: h.importe !== null ? Number(h.importe) : null, deducciones: null })
+  for (const d of deducciones) if (d.descripcion && (d.importe !== null)) conceptos.push({ codigo: d.codigo || '', descripcion: d.descripcion, haberes: null, deducciones: d.importe !== null ? Number(d.importe) : null })
 
   const periodoMes = (() => {
     if (empleado.periodoLiquidacion){
