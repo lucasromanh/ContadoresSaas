@@ -9,7 +9,10 @@ function persist(){
   try{ if (perfil) localStorage.setItem(STORAGE, JSON.stringify(perfil)) }catch(e){}
 }
 
+const emitter = new EventTarget()
+
 const perfilService = {
+  emitter,
   load: async (): Promise<PerfilContador> => {
     if (perfil) return perfil
     try{
@@ -26,18 +29,21 @@ const perfilService = {
     if (!perfil) await perfilService.load()
     perfil = { ...(perfil as PerfilContador), ...(patch as any) }
     persist()
+    try{ emitter.dispatchEvent(new CustomEvent('change', { detail: perfil })) }catch(e){}
     return perfil
   },
   saveAvatar: async (dataUrl: string) => {
     if (!perfil) await perfilService.load()
     perfil = { ...(perfil as PerfilContador), avatarUrl: dataUrl }
     persist()
+    try{ emitter.dispatchEvent(new CustomEvent('change', { detail: perfil })) }catch(e){}
     return perfil
   },
   saveFirma: async (dataUrl: string) => {
     if (!perfil) await perfilService.load()
     perfil = { ...(perfil as PerfilContador), firmaDigitalUrl: dataUrl }
     persist()
+    try{ emitter.dispatchEvent(new CustomEvent('change', { detail: perfil })) }catch(e){}
     return perfil
   }
 }

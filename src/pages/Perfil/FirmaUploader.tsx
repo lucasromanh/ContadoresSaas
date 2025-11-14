@@ -8,18 +8,29 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
 
   useEffect(()=>{ setPreview(value) }, [value])
 
+  // Resize canvas to match CSS size and devicePixelRatio for crisp drawing
   useEffect(()=>{
-    const c = canvasRef.current
-    if (!c) return
-    c.width = 600
-    c.height = 200
-    const ctx = c.getContext('2d')
-    if (!ctx) return
-    ctx.fillStyle = 'transparent'
-    ctx.clearRect(0,0,c.width,c.height)
-    ctx.lineWidth = 2
-    ctx.lineCap = 'round'
-    ctx.strokeStyle = '#000'
+    const resize = () => {
+      const c = canvasRef.current
+      if (!c) return
+      const rect = c.getBoundingClientRect()
+      const dpr = window.devicePixelRatio || 1
+      c.width = Math.round(rect.width * dpr)
+      c.height = Math.round(rect.height * dpr)
+      const ctx = c.getContext('2d')
+      if (!ctx) return
+      // reset transform then scale for DPR
+      ctx.setTransform(1,0,0,1,0,0)
+      ctx.scale(dpr, dpr)
+      ctx.clearRect(0,0,rect.width, rect.height)
+      ctx.lineWidth = 2
+      ctx.lineCap = 'round'
+      ctx.strokeStyle = '#000'
+    }
+
+    resize()
+    window.addEventListener('resize', resize)
+    return () => window.removeEventListener('resize', resize)
   }, [])
 
   const start = (e: React.MouseEvent) => {
@@ -39,8 +50,10 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
     ctx.stroke()
   }
   const end = async () => {
+    if (!drawing) { setDrawing(false); return }
     setDrawing(false)
     const c = canvasRef.current; if (!c) return
+    // export as PNG at device pixel ratio for quality
     const data = c.toDataURL('image/png')
     setPreview(data)
     onChange(data)
@@ -62,10 +75,10 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
   return (
     <div className="space-y-2">
       <div className="border rounded p-2">
-        <canvas ref={canvasRef} onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={()=> setDrawing(false)} className="w-full max-w-full h-40 bg-white" />
+        <canvas ref={canvasRef} onMouseDown={start} onMouseMove={move} onMouseUp={end} onMouseLeave={()=> end()} className="w-full h-48 bg-white" />
       </div>
       <div className="flex gap-2">
-        <input type="file" accept="image/png" onChange={uploadFile} />
+        <input type="file" accept="image/*" onChange={uploadFile} />
         <Button size="sm" onClick={clear}>Borrar</Button>
       </div>
       {preview && (

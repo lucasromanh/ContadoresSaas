@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Button } from '../../components/ui/Button'
 
 const readFileAsDataURL = (f: File) => new Promise<string>((res, rej) => {
@@ -11,6 +11,8 @@ const readFileAsDataURL = (f: File) => new Promise<string>((res, rej) => {
 export default function AvatarUploader({ value, onChange }:{ value?: string; onChange: (dataUrl:string)=>void }){
   const ref = useRef<HTMLInputElement|null>(null)
   const [preview, setPreview] = useState<string|undefined>(value)
+
+  useEffect(()=>{ setPreview(value) }, [value])
 
   const pick = async (e: React.ChangeEvent<HTMLInputElement>)=>{
     const f = e.target.files?.[0]

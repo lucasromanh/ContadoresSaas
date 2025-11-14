@@ -39,7 +39,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
     // validate teléfono argentino minimal: digits >= 10 (incluye 54)
     const tel = values.contacto.telefonoPersonal || ''
     if (values.contacto.telefonoPersonal && telefonoDigits(tel) < 10) {
-      alert('Número telefónico inválido. Asegúrate de usar formato argentino (+54...)')
+      form.setError('contacto.telefonoPersonal' as any, { type: 'manual', message: 'Número inválido. Usa formato argentino, p.ej. +54 9 11 1234 5678' } as any)
       return
     }
     const updated = await perfilService.update(values as any)
@@ -86,6 +86,8 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
                 <div>
                   <label className="text-xs">Teléfono personal</label>
                   <Input {...form.register('contacto.telefonoPersonal' as any)} />
+                  <div className="text-xs text-slate-500">Formato aceptado: +54 9 11 1234 5678 o 3811234567 (sin espacios). Dejar vacío si no desea recibir SMS/WhatsApp.</div>
+                  {(form.formState.errors as any).contacto?.telefonoPersonal && <div className="text-xs text-red-600">{(form.formState.errors as any).contacto.telefonoPersonal.message}</div>}
                 </div>
                 <div>
                   <label className="text-xs">Recibir notificaciones en</label>
