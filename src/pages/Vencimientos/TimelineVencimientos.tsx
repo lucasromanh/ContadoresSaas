@@ -1,0 +1,40 @@
+import React from 'react'
+import { Vencimiento } from './services/vencimientosService'
+
+export default function TimelineVencimientos({ items }: { items: Vencimiento[] }){
+  // compute current week (Mon-Sun)
+  const now = new Date()
+  const dayOfWeek = (now.getDay() + 6) % 7 // 0 = Monday
+  const monday = new Date(now); monday.setDate(now.getDate() - dayOfWeek)
+  const days = Array.from({length:7}, (_,i)=>{ const d = new Date(monday); d.setDate(monday.getDate()+i); return d })
+
+  function keyOf(d: Date){ return d.toISOString().slice(0,10) }
+
+  return (
+    <div className="mt-4 border rounded p-2">
+      <div className="grid grid-cols-7 gap-2">
+        {days.map((d)=>{
+          const key = keyOf(d)
+          const dayItems = items.filter(it => it.fecha === key)
+          return (
+            <div key={key} className="p-2 border rounded min-h-[120px] bg-white/5 dark:bg-slate-900">
+              <div className="text-sm font-semibold">{d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}</div>
+              <div className="mt-2 space-y-2">
+                {dayItems.map(it => (
+                  <div key={it.id} className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${it.criticidad==='alta'?'bg-red-500': it.criticidad==='media'?'bg-amber-400':'bg-emerald-400'}`}></div>
+                      <div className="truncate max-w-[120px]">{it.descripcion}</div>
+                    </div>
+                    <div className="text-xs text-slate-500">{it.estado}</div>
+                  </div>
+                ))}
+                {dayItems.length===0 && <div className="text-xs text-slate-400">Sin eventos</div>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
