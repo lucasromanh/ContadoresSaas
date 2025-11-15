@@ -1,11 +1,22 @@
 import emailjs from '@emailjs/browser'
 
 // Configuración de EmailJS
-// Public Key: ZLVVgCsKO48lA_gZF
-// Private Key: icJuhWf-fIpbg88jMl-3
-const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_id'
-const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_id'
-const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'ZLVVgCsKO48lA_gZF'
+// Public Key: ZLVVgCsKO48IA_gZF (con I mayúscula)
+// Private Key: icJjuhWf-flpbg88jMl-3
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_d8fgn9m'
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_3tslb2i'
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'ZLVVgCsKO48IA_gZF'
+const EMAILJS_PRIVATE_KEY = import.meta.env.VITE_EMAILJS_PRIVATE_KEY || 'icJjuhWf-flpbg88jMl-3'
+
+// Inicializar EmailJS con la Public Key según la documentación oficial
+emailjs.init({
+  publicKey: EMAILJS_PUBLIC_KEY,
+  blockHeadless: true,
+  limitRate: {
+    id: 'app',
+    throttle: 10000, // 1 request cada 10 segundos
+  },
+})
 
 interface WaitlistData {
   nombre: string
@@ -18,7 +29,14 @@ interface WaitlistData {
  */
 export const enviarEmailListaEspera = async (data: WaitlistData): Promise<boolean> => {
   try {
-    const templateParams = {
+    console.log('📧 Enviando email con:', {
+      service: EMAILJS_SERVICE_ID,
+      template: EMAILJS_TEMPLATE_ID,
+      publicKey: EMAILJS_PUBLIC_KEY,
+      hasPrivateKey: !!EMAILJS_PRIVATE_KEY
+    })
+
+    const templateParams: any = {
       // Datos del destinatario
       to_email: data.email,
       to_name: data.nombre,
@@ -133,17 +151,22 @@ export const enviarEmailListaEspera = async (data: WaitlistData): Promise<boolea
       `
     }
 
-    await emailjs.send(
+    // Agregar accessToken (Private Key) si está disponible
+    const response = await emailjs.send(
       EMAILJS_SERVICE_ID,
       EMAILJS_TEMPLATE_ID,
-      templateParams,
-      EMAILJS_PUBLIC_KEY
+      { ...templateParams, accessToken: EMAILJS_PRIVATE_KEY }
     )
 
-    console.log('✅ Email enviado al usuario con CC al admin')
+    console.log('✅ Email enviado exitosamente:', response)
     return true
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error enviando email:', error)
+    console.error('Detalles del error:', {
+      status: error?.status,
+      text: error?.text,
+      message: error?.message
+    })
     return false
   }
 }
