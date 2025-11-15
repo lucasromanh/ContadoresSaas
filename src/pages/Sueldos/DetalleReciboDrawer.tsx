@@ -17,7 +17,7 @@ export default function DetalleReciboDrawer({ open, onClose, recibo }:{ open:boo
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <h4 className="font-semibold">Haberes</h4>
             <ul className="list-disc ml-5">

@@ -68,9 +68,9 @@ export function SmartTable<T extends { id?: string }>({ columns, data, loading =
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-2">
-      <div className="flex items-center gap-2">
-        <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} placeholder="Buscar..." className="w-56" />
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }} placeholder="Buscar..." className="w-full sm:w-56" />
         <button onClick={handleExport} className="px-2 py-1 border rounded text-sm">Exportar CSV</button>
           <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => handleImport(e.target.files)} />
           <button onClick={handleImportClick} className="px-2 py-1 border rounded text-sm">Importar CSV</button>
@@ -78,12 +78,12 @@ export function SmartTable<T extends { id?: string }>({ columns, data, loading =
         <div className="text-sm text-slate-500">{total} resultados</div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
         <table className="min-w-full">
           <thead>
             <tr>
               {columns.map((c) => (
-                <th key={String(c.key)} className="text-left p-2 text-sm text-slate-600 dark:text-slate-300">
+                <th key={String(c.key)} className="text-left p-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">
                   <div className="flex items-center gap-2">
                     <span>{c.label}</span>
                     {c.sortable && (
@@ -95,19 +95,19 @@ export function SmartTable<T extends { id?: string }>({ columns, data, loading =
                   </div>
                 </th>
               ))}
-              <th className="p-2 text-sm text-slate-600 dark:text-slate-300">Acciones</th>
+              <th className="p-2 text-xs sm:text-sm text-slate-600 dark:text-slate-300 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {paged.map((row) => (
               <tr key={(row.id as string) ?? Math.random()} className={`border-t dark:border-slate-700 ${stateKey ? colorByState((row as any)[stateKey]) : ''}`}>
                 {columns.map((c) => (
-                  <td key={String(c.key)} className="p-2 text-sm text-slate-700 dark:text-slate-200">
+                  <td key={String(c.key)} className="p-2 text-xs sm:text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">
                     {String((row as any)[c.key] ?? '-')}
                   </td>
                 ))}
-                <td className="p-2 text-sm">
-                  <div className="flex gap-2">
+                <td className="p-2 text-xs sm:text-sm whitespace-nowrap">
+                  <div className="flex gap-1 sm:gap-2">
                     <button onClick={() => onAction?.('view', row)} className="text-blue-600 dark:text-blue-300 hover:underline">Ver</button>
                     <button onClick={() => onAction?.('edit', row)} className="text-amber-600 dark:text-amber-300 hover:underline">Editar</button>
                     <button onClick={() => onAction?.('delete', row)} className="text-red-600 dark:text-red-300 hover:underline">Eliminar</button>
@@ -119,8 +119,8 @@ export function SmartTable<T extends { id?: string }>({ columns, data, loading =
         </table>
       </div>
 
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex gap-2 items-center">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2 items-center">
           <button onClick={() => setPage((p) => Math.max(1, p - 1))} className="px-2 py-1 border rounded">Anterior</button>
           <div>Página {page} / {pages}</div>
           <button onClick={() => setPage((p) => Math.min(pages, p + 1))} className="px-2 py-1 border rounded">Siguiente</button>

@@ -12,7 +12,7 @@ export default function TimelineVencimientos({ items }: { items: Vencimiento[] }
 
   return (
     <div className="mt-4 border rounded p-2">
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-2">
         {days.map((d)=>{
           const key = keyOf(d)
           const dayItems = items.filter(it => it.fecha === key)

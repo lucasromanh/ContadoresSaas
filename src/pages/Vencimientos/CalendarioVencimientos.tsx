@@ -52,18 +52,20 @@ export default function CalendarioVencimientos({ items, onEventClick, onDayClick
           if (!isEmpty) dayNum = new Date(key).getDate()
           const dayItems = !isEmpty ? items.filter(it => it.fecha === key) : []
           return (
-            <div key={key} className={`min-h-[68px] p-2 border rounded ${isEmpty ? 'bg-transparent' : 'bg-slate-100 dark:bg-slate-800'} border-slate-200 dark:border-slate-700`}>
-              <div className="text-xs text-slate-800 dark:text-slate-100">{dayNum ?? ''}</div>
+            <div key={key} className={`min-h-[50px] sm:min-h-[68px] p-1 sm:p-2 border rounded text-xs ${isEmpty ? 'bg-transparent' : 'bg-slate-100 dark:bg-slate-800'} border-slate-200 dark:border-slate-700`}>
+              <div className="font-semibold text-slate-800 dark:text-slate-100">{dayNum ?? ''}</div>
               {!isEmpty && (
-                <div className="mt-1 space-y-1">
-                  {dayItems.slice(0,3).map(it => {
+                <div className="mt-0.5 sm:mt-1 space-y-0.5 sm:space-y-1">
+                  {dayItems.slice(0, 2).map(it => {
                     // base text color adapts to theme; estadoClass provides accent colors
                     const estadoClass = it.estado === 'vencido' ? 'text-red-700 dark:text-red-300' : it.estado === 'pagado' ? 'text-emerald-700 dark:text-emerald-300 line-through opacity-90' : it.estado === 'presentado' ? 'text-sky-700 dark:text-sky-300' : (it.criticidad==='alta'?'text-red-600 dark:text-red-300': it.criticidad==='media'?'text-amber-600 dark:text-amber-300':'text-emerald-600 dark:text-emerald-300')
                     return (
-                      <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-xs truncate overflow-hidden min-w-0 text-slate-800 dark:text-slate-100 ${estadoClass}`}>{it.tipo} • {it.cliente}</div>
+                      <div key={it.id} onClick={()=> onEventClick && onEventClick(it)} title={`${it.descripcion} • ${it.cliente}`} className={`text-[10px] sm:text-xs truncate overflow-hidden min-w-0 cursor-pointer hover:opacity-80 ${estadoClass}`}>
+                        <span className="hidden sm:inline">{it.tipo} • </span>{it.cliente}
+                      </div>
                     )
                   })}
-                  {dayItems.length>3 && <div onClick={()=> onDayClick && onDayClick(key, dayItems)} className="text-xs text-slate-600 dark:text-slate-300 cursor-pointer">+{dayItems.length-3} más</div>}
+                  {dayItems.length>2 && <div onClick={()=> onDayClick && onDayClick(key, dayItems)} className="text-[10px] sm:text-xs text-slate-600 dark:text-slate-400 cursor-pointer hover:underline">+{dayItems.length-2}</div>}
                 </div>
               )}
             </div>

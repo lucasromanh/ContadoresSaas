@@ -71,7 +71,7 @@ const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (
         <div key={c.id} className="p-2 border rounded w-full">
           <div className="font-medium">{c.razon_social}</div>
           <div className="text-sm text-slate-500">{c.cuit}</div>
-          <div className="mt-2 flex gap-2">
+          <div className="mt-2 flex flex-wrap gap-2">
             <Button onClick={() => onView(c.id)}>Ver</Button>
             <Button onClick={() => onEdit(c)}>Editar</Button>
             <Button onClick={() => onDelete(c.id)}>Eliminar</Button>

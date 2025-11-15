@@ -14,9 +14,9 @@ export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApp
 
   return (
     <div className="flex flex-wrap gap-3 items-end">
-      <div>
+      <div className="flex-1 min-w-[150px]">
         <label className="text-xs text-slate-500">Cliente</label>
-  <input list="clientes-list" className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={cliente} onChange={(e)=>{
+  <input list="clientes-list" className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={cliente} onChange={(e)=>{
           const v = e.target.value
           setCliente(v)
           // auto-fill CUIT when exact match found
@@ -27,13 +27,13 @@ export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApp
           {(clientes || []).map((c:any)=>(<option key={c.id || c.nombre} value={c.razon_social || c.nombre} />))}
         </datalist>
       </div>
-      <div>
+      <div className="flex-1 min-w-[120px]">
         <label className="text-xs text-slate-500">CUIT</label>
-  <input className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={cuit} onChange={(e)=>setCuit(e.target.value)} />
+  <input className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={cuit} onChange={(e)=>setCuit(e.target.value)} />
       </div>
-      <div>
+      <div className="flex-1 min-w-[120px]">
         <label className="text-xs text-slate-500">Tipo</label>
-  <select className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={tipo} onChange={(e)=>setTipo(e.target.value)}>
+  <select className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={tipo} onChange={(e)=>setTipo(e.target.value)}>
           <option value="">Todos</option>
           <option value="ARCA">ARCA</option>
           <option value="RENTAS">RENTAS</option>
@@ -41,9 +41,9 @@ export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApp
           <option value="MONOTRIBUTO">MONOTRIBUTO</option>
         </select>
       </div>
-      <div>
+      <div className="flex-1 min-w-[120px]">
         <label className="text-xs text-slate-500">Estado</label>
-  <select className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={estado} onChange={(e)=>setEstado(e.target.value)}>
+  <select className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={estado} onChange={(e)=>setEstado(e.target.value)}>
           <option value="">Todos</option>
           <option value="pendiente">pendiente</option>
           <option value="presentado">presentado</option>
@@ -51,9 +51,9 @@ export default function FiltrosVencimientos({ onApply, onSendReminder }: { onApp
           <option value="vencido">vencido</option>
         </select>
       </div>
-      <div>
+      <div className="flex-1 min-w-[100px]">
         <label className="text-xs text-slate-500">Provincia</label>
-  <input className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={provincia} onChange={(e)=>setProvincia(e.target.value)} />
+  <input className="block w-full border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700 dark:text-slate-100" value={provincia} onChange={(e)=>setProvincia(e.target.value)} />
       </div>
       <div>
         <button onClick={apply} className="btn-primary px-3 py-1">Aplicar</button>

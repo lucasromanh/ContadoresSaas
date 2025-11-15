@@ -8,7 +8,7 @@ export default function ResumenIVA({ data }: { data: any[] }) {
   const inconsistentes = data.filter((d) => d.inconsistente).length
 
   return (
-    <div className="grid grid-cols-4 gap-3 text-slate-700 dark:text-slate-200">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-slate-700 dark:text-slate-200">
       <div className="p-3 border rounded bg-white/5 dark:bg-slate-800">
         <div className="text-xs text-slate-500 dark:text-slate-300">Total Neto</div>
         <div className="text-lg font-semibold">${totalNeto}</div>

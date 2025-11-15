@@ -31,9 +31,9 @@ export const RiskStats: React.FC<{ alertas: AlertaFiscal[] }> = ({ alertas }) =>
   }, [alertas])
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <Card>
-        <div className="h-64">
+        <div className="h-64 overflow-hidden">
           <h4 className="font-semibold mb-2">Distribución por tipo</h4>
           <ResponsiveContainer width="100%" height={200}>
             <PieChart>
@@ -49,8 +49,8 @@ export const RiskStats: React.FC<{ alertas: AlertaFiscal[] }> = ({ alertas }) =>
       </Card>
 
       <Card>
-        <div className="h-64">
-          <h4 className="font-semibold mb-2">Alertas por mes</h4>
+        <div className="h-64 overflow-hidden">
+          <h4 className="font-semibold mb-2 text-sm lg:text-base">Alertas por mes</h4>
           <ResponsiveContainer width="100%" height={200}>
         <BarChart data={byMonth} margin={{ left: 0, right: 10 }} barCategoryGap="20%">
               <CartesianGrid strokeDasharray="3 3" />
@@ -65,9 +65,9 @@ export const RiskStats: React.FC<{ alertas: AlertaFiscal[] }> = ({ alertas }) =>
       </Card>
 
       <Card>
-        <div className="h-64">
-          <h4 className="font-semibold mb-2">Resumen rápido</h4>
-          <div className="flex flex-col space-y-2">
+        <div className="h-64 overflow-auto">
+          <h4 className="font-semibold mb-2 text-sm lg:text-base">Resumen rápido</h4>
+          <div className="flex flex-col space-y-2 text-sm">
             <div className="flex justify-between"><span>Total alertas</span><strong>{alertas.length}</strong></div>
             <div className="flex justify-between"><span>Criticas</span><strong>{alertas.filter(a => a.criticidad === 'alta').length}</strong></div>
             <div className="flex justify-between"><span>En proceso</span><strong>{alertas.filter(a => a.estado === 'en_proceso').length}</strong></div>

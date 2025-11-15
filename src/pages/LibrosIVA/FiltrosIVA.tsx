@@ -18,22 +18,22 @@ export default function FiltrosIVA({ onApply }: { onApply: (f: Filters) => void 
   }
 
   return (
-    <div className="flex gap-3 items-end text-slate-700 dark:text-slate-200">
-      <div>
+    <div className="flex flex-wrap gap-3 items-end text-slate-700 dark:text-slate-200">
+      <div className="flex-1 min-w-[100px]">
         <label className="text-xs text-slate-500 dark:text-slate-300">Mes</label>
-        <input type="number" value={mes} onChange={(e)=>setMes(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="MM" />
+        <input type="number" value={mes} onChange={(e)=>setMes(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="MM" />
       </div>
-      <div>
+      <div className="flex-1 min-w-[100px]">
         <label className="text-xs text-slate-500 dark:text-slate-300">Año</label>
-        <input type="number" value={year} onChange={(e)=>setYear(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="YYYY" />
+        <input type="number" value={year} onChange={(e)=>setYear(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="YYYY" />
       </div>
-      <div>
+      <div className="flex-1 min-w-[120px]">
         <label className="text-xs text-slate-500 dark:text-slate-300">CUIT</label>
-        <input value={cuit} onChange={(e)=>setCuit(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="20-..." />
+        <input value={cuit} onChange={(e)=>setCuit(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100" placeholder="20-..." />
       </div>
-      <div>
+      <div className="flex-1 min-w-[100px]">
         <label className="text-xs text-slate-500 dark:text-slate-300">Tipo</label>
-        <select value={tipo} onChange={(e)=>setTipo(e.target.value)} className="block border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100">
+        <select value={tipo} onChange={(e)=>setTipo(e.target.value)} className="block w-full border px-2 py-1 rounded bg-white text-slate-800 dark:bg-slate-700 dark:text-slate-100">
           <option value="">Todos</option>
           <option value="A">A</option>
           <option value="B">B</option>

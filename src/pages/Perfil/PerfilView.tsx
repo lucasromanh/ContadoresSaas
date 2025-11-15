@@ -14,8 +14,8 @@ export default function PerfilView({ onEdit }:{ onEdit?: ()=>void }){
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex gap-6">
-        <div className="w-48">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-48">
           <AvatarUploader value={perfil.avatarUrl} onChange={async (d)=>{ await perfilService.saveAvatar(d); setPerfil(await perfilService.getFresh()) }} />
           <div className="mt-4">
             <div className="text-xs text-slate-500">Firma digital</div>
@@ -23,14 +23,14 @@ export default function PerfilView({ onEdit }:{ onEdit?: ()=>void }){
           </div>
         </div>
         <div className="flex-1">
-          <h2 className="text-xl font-semibold">{perfil.nombreCompleto}</h2>
-          <div className="text-sm text-slate-600">Matrícula: {perfil.matricula.numero} — {perfil.matricula.entidad}</div>
-          <div className="mt-3 space-y-2">
-            <div><strong>Actividad:</strong> {perfil.datosFiscales.actividadPrincipal}</div>
-            <div><strong>Condición IVA:</strong> {perfil.datosFiscales.condicionIVA}</div>
-            <div><strong>Inicio de actividades:</strong> {perfil.datosFiscales.inicioActividad}</div>
-            <div><strong>Estudio:</strong> {perfil.estudio.nombre} — {perfil.estudio.direccion} — {perfil.estudio.telefonoEstudio}</div>
-            <div><strong>Contacto:</strong> {perfil.contacto.emailPersonal} • {perfil.contacto.telefonoPersonal}</div>
+          <h2 className="text-xl font-semibold break-words">{perfil.nombreCompleto}</h2>
+          <div className="text-sm text-slate-600 break-words">Matrícula: {perfil.matricula.numero} — {perfil.matricula.entidad}</div>
+          <div className="mt-3 space-y-2 text-sm">
+            <div className="break-words"><strong>Actividad:</strong> {perfil.datosFiscales.actividadPrincipal}</div>
+            <div className="break-words"><strong>Condición IVA:</strong> {perfil.datosFiscales.condicionIVA}</div>
+            <div className="break-words"><strong>Inicio de actividades:</strong> {perfil.datosFiscales.inicioActividad}</div>
+            <div className="break-words"><strong>Estudio:</strong> {perfil.estudio.nombre} — {perfil.estudio.direccion} — {perfil.estudio.telefonoEstudio}</div>
+            <div className="break-words"><strong>Contacto:</strong> {perfil.contacto.emailPersonal} • {perfil.contacto.telefonoPersonal}</div>
           </div>
           <div className="mt-4">
             <Button onClick={onEdit}>Editar perfil</Button>

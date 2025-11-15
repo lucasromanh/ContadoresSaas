@@ -57,32 +57,32 @@ export const RiskTable: React.FC<{ alertas: AlertaFiscal[]; onViewDetail?: (a: A
         </div>
       </div>
 
-      <div className="overflow-auto">
+      <div className="overflow-x-auto -mx-2 sm:mx-0">
         <table className="w-full table-auto">
           <thead>
-            <tr className="text-left text-sm text-slate-500">
-              <th className="px-3 py-2">CUIT</th>
-              <th className="px-3 py-2">Cliente</th>
-              <th className="px-3 py-2">Descripción</th>
-              <th className="px-3 py-2">Criticidad</th>
-              <th className="px-3 py-2">Fecha</th>
-              <th className="px-3 py-2">Estado</th>
-              <th className="px-3 py-2">Acciones</th>
+            <tr className="text-left text-xs sm:text-sm text-slate-500">
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">CUIT</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Cliente</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Descripción</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Criticidad</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Fecha</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Estado</th>
+              <th className="px-2 sm:px-3 py-2 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {pageData.map((r) => (
               <tr key={r.id} className="border-t">
-                <td className="px-3 py-2 align-top text-sm text-slate-700 dark:text-slate-200">{r.cuit}</td>
-                <td className="px-3 py-2 align-top text-sm">{r.cliente}</td>
-                <td className="px-3 py-2 align-top text-sm">{r.descripcion}</td>
-                <td className="px-3 py-2 align-top text-sm">
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm text-slate-700 dark:text-slate-200 whitespace-nowrap">{r.cuit}</td>
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">{r.cliente}</td>
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">{r.descripcion}</td>
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">
                   <span className={`px-2 py-0.5 rounded text-xs ${r.criticidad === 'alta' ? 'bg-red-600 text-white' : r.criticidad === 'media' ? 'bg-amber-400 text-black' : 'bg-sky-500 text-white'}`}>{r.criticidad}</span>
                 </td>
-                <td className="px-3 py-2 align-top text-sm">{new Date(r.fecha).toLocaleDateString()}</td>
-                <td className="px-3 py-2 align-top text-sm">{r.estado}</td>
-                <td className="px-3 py-2 align-top text-sm">
-                  <div className="flex items-center gap-2">
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">{new Date(r.fecha).toLocaleDateString()}</td>
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">{r.estado}</td>
+                <td className="px-2 sm:px-3 py-2 align-top text-xs sm:text-sm whitespace-nowrap">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     <Button variant="ghost" size="sm" onClick={() => onViewDetail && onViewDetail(r)}>Ver detalle</Button>
                     <Button variant="outline" size="sm" onClick={() => {}}>Contactar</Button>
                   </div>

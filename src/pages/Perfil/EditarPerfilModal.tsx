@@ -67,7 +67,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
         <div className="flex-1">
           <form onSubmit={form.handleSubmit(save)} className="space-y-3">
             {tab===0 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs">Nombre completo</label>
                   <Input {...form.register('nombreCompleto' as any)} />
@@ -104,7 +104,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
             )}
 
             {tab===1 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs">Matrícula número</label>
                   <Input {...form.register('matricula.numero' as any)} />
@@ -121,7 +121,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
             )}
 
             {tab===2 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs">Nombre del estudio</label>
                   <Input {...form.register('estudio.nombre' as any)} />
@@ -142,7 +142,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
             )}
 
             {tab===3 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs">Condición frente al IVA</label>
                   <select {...form.register('datosFiscales.condicionIVA' as any)} className="block border px-2 py-1 rounded bg-slate-100 dark:bg-slate-700">
@@ -168,7 +168,7 @@ export default function EditarPerfilModal({ open, onClose, onSaved }:{ open: boo
             )}
 
             {tab===4 && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="col-span-2">
                   <div className="flex items-center gap-3">
                     <label className="text-xs">Alertas</label>

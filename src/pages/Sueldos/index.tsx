@@ -88,7 +88,7 @@ export const SueldosPage: React.FC = () => {
   return (
     <PageContainer>
       <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-xl font-semibold">Sueldos</h2>
         <div>
           <Button onClick={() => setOpenNew(true)}>Subir recibo</Button>

@@ -68,14 +68,14 @@ export default function AlertasPage(){
       <h2 className="text-xl font-semibold mb-4">Alertas</h2>
       <Card>
         <div className="mb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-3 lg:gap-4">
               <FiltrosAlertas onApply={applyFilter} />
               <div className="text-sm text-slate-600">Total: <span className="font-semibold">{items.length}</span></div>
               <div className="text-sm text-amber-700">Pendientes: <span className="font-semibold">{items.filter(i=>i.estado==='pendiente').length}</span></div>
               <div className="text-sm text-red-600">Urgentes: <span className="font-semibold">{items.filter(i=>i.estado==='urgente').length}</span></div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button variant="outline" onClick={markAllRead}>Marcar todo leído</Button>
               <Button variant="info" onClick={()=> setShowResueltas(v=>!v)}>{showResueltas ? 'Ocultar resueltas' : 'Ver resueltas'}</Button>
               {perfilPhone && <Button variant="ghost" onClick={()=> onSend(perfilPhone)}>Enviar al contador</Button>}
