@@ -11,6 +11,8 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import ClienteDetail from '../../components/clients/ClienteDetail'
+import EnviarWhatsAppModal from '../../components/whatsapp/EnviarWhatsAppModal'
+import { MessageCircle } from 'lucide-react'
 
 // --- Forms with zod validation (module scope)
 const clienteSchema = z.object({
@@ -63,7 +65,7 @@ const EditClienteForm: React.FC<{ initial: any; onSave: (d: any) => void; onCanc
   )
 }
 
-const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (c:any)=>void; onDelete: (id:string)=>void }> = ({ data, onView, onEdit, onDelete }) => {
+const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (c:any)=>void; onDelete: (id:string)=>void; onWhatsApp: (c:any)=>void }> = ({ data, onView, onEdit, onDelete, onWhatsApp }) => {
   const navigate = useNavigate()
   return (
     <div className="mt-3 flex gap-2">
@@ -75,6 +77,10 @@ const ClientCards: React.FC<{ data: any[]; onView: (id: string)=>void; onEdit: (
             <Button onClick={() => onView(c.id)}>Ver</Button>
             <Button onClick={() => onEdit(c)}>Editar</Button>
             <Button onClick={() => onDelete(c.id)}>Eliminar</Button>
+            <Button variant="outline" onClick={() => onWhatsApp(c)} className="gap-1">
+              <MessageCircle className="w-4 h-4" />
+              WhatsApp
+            </Button>
             <Button onClick={() => navigate(`/documentos?clientId=${c.id}&clientName=${encodeURIComponent(c.razon_social || c.nombre)}`)}>Carpeta documental</Button>
           </div>
         </div>
@@ -91,6 +97,8 @@ export const ClientesPage: React.FC = () => {
   const [openNew, setOpenNew] = useState(false)
   const [editing, setEditing] = useState<any | null>(null)
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [whatsappCliente, setWhatsappCliente] = useState<any | null>(null)
 
   const fetch = async () => {
     setLoading(true)
@@ -119,6 +127,11 @@ export const ClientesPage: React.FC = () => {
     if (!confirm('¿Eliminar cliente?')) return
     await clientesService.remove(id)
     fetch()
+  }
+
+  const handleWhatsApp = (cliente: any) => {
+    setWhatsappCliente(cliente)
+    setWhatsappOpen(true)
   }
 
   return (
@@ -154,7 +167,7 @@ export const ClientesPage: React.FC = () => {
           searchKeys={['razon_social', 'cuit']}
           stateKey={'estado'}
         />
-        <ClientCards data={data.slice(0,5)} onView={(id)=>setDetailId(id)} onEdit={(c)=>setEditing(c)} onDelete={(id)=>handleDelete(id)} />
+        <ClientCards data={data.slice(0,5)} onView={(id)=>setDetailId(id)} onEdit={(c)=>setEditing(c)} onDelete={(id)=>handleDelete(id)} onWhatsApp={handleWhatsApp} />
       </Card>
 
       <Dialog open={openNew} onOpenChange={setOpenNew} title="Crear cliente">
@@ -168,6 +181,16 @@ export const ClientesPage: React.FC = () => {
         </Dialog>
       )}
       {detailId && <ClienteDetail id={detailId} open={!!detailId} onOpenChange={(v) => !v && setDetailId(null)} />}
+      
+      <EnviarWhatsAppModal
+        open={whatsappOpen}
+        onClose={() => { setWhatsappOpen(false); setWhatsappCliente(null) }}
+        tipo="custom"
+        destinatario={{
+          nombre: whatsappCliente?.razon_social || whatsappCliente?.nombre || '',
+          telefono: whatsappCliente?.telefono || '',
+        }}
+      />
       </div>
     </PageContainer>
   )

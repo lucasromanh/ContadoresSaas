@@ -54,9 +54,6 @@ async function extractTextFromPdf(file: File): Promise<OCRResult> {
   // OEM = 1 (LSTM_ONLY)
   const worker: any = await createWorker("spa", 1);
 
-  // Logging correcto
-  worker.setLogger((m: any) => console.log("Tesseract:", m));
-
   await worker.setParameters({
     preserve_interword_spaces: "1",
     tessedit_pageseg_mode: "6",
@@ -67,13 +64,17 @@ async function extractTextFromPdf(file: File): Promise<OCRResult> {
 
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const viewport = page.getViewport({ scale: 2 });
+    // Aumentar escala a 3 para mejor calidad de OCR
+    const viewport = page.getViewport({ scale: 3 });
 
     const canvas = document.createElement("canvas");
     canvas.width = viewport.width;
     canvas.height = viewport.height;
 
     const ctx = canvas.getContext("2d")!;
+    // Fondo blanco para mejor contraste
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     await page.render({
       canvasContext: ctx,
@@ -83,6 +84,7 @@ async function extractTextFromPdf(file: File): Promise<OCRResult> {
 
     const dataUrl = canvas.toDataURL("image/png");
 
+    console.log(`Procesando página ${i} del PDF con Tesseract...`);
     const { data } = await worker.recognize(dataUrl);
 
     const text = (data.text || "").replace(/\s+/g, " ").trim();
@@ -129,9 +131,6 @@ async function ocrImage(file: File): Promise<OCRResult> {
 
   // Crear worker correctamente (sin configs extra)
   const worker: any = await createWorker("spa", 1);
-
-  // Logger compatible con TS
-  worker.setLogger((m: any) => console.log("OCR IMG:", m));
 
   // Parámetros recomendados
   await worker.setParameters({
@@ -199,10 +198,13 @@ async function fallbackText(file: File): Promise<OCRResult> {
 export async function processFileOCR(file: File): Promise<OCRResult> {
   if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
     try {
+      console.log("Procesando PDF con OCR (Tesseract)...");
       const pdf = await extractTextFromPdf(file);
-      if (pdf.text.length > 20) return pdf;
+      console.log(`PDF procesado: ${pdf.text.length} caracteres extraídos`);
+      if (pdf.text.length > 50) return pdf;
+      console.warn("PDF con poco texto extraído, puede ser escaneado");
     } catch (e) {
-      console.error("Error PDF:", e);
+      console.error("Error procesando PDF:", e);
     }
   }
 

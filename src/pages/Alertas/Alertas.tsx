@@ -8,6 +8,7 @@ import FiltrosAlertas from './FiltrosAlertas'
 import DrawerDetalleAlerta from './DrawerDetalleAlerta'
 import CrearAlertaModal from './CrearAlertaModal'
 import GeneradorAlertas from '../Vencimientos/GeneradorAlertas'
+import EnviarWhatsAppModal from '../../components/whatsapp/EnviarWhatsAppModal'
 
 export default function AlertasPage(){
   const [items, setItems] = useState<Alerta[]>([])
@@ -18,6 +19,8 @@ export default function AlertasPage(){
   const [sendCliente, setSendCliente] = useState<string|undefined>(undefined)
   const [showResueltas, setShowResueltas] = useState(false)
   const [perfilPhone, setPerfilPhone] = useState<string | null>(null)
+  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [whatsappAlerta, setWhatsappAlerta] = useState<Alerta | null>(null)
 
   useEffect(()=>{
     alertasService.loadMock().then(d=> setItems(d))
@@ -58,6 +61,11 @@ export default function AlertasPage(){
     setShowSend(true)
   }
 
+  function onWhatsApp(alerta: Alerta){
+    setWhatsappAlerta(alerta)
+    setWhatsappOpen(true)
+  }
+
   function markAllRead(){
     alertasService.markAllRead()
     reload()
@@ -86,7 +94,7 @@ export default function AlertasPage(){
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="lg:col-span-2">
-            <ListadoAlertas items={filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} />
+            <ListadoAlertas items={filtered()} onView={(a)=>setSelected(a)} onMark={onMark} onSend={onSend} onWhatsApp={onWhatsApp} />
           </div>
           <div>
             <h3 className="text-sm font-medium mb-2">Resumen</h3>
@@ -102,6 +110,20 @@ export default function AlertasPage(){
       <DrawerDetalleAlerta alerta={selected} open={!!selected} onOpenChange={(v)=>{ if (!v) setSelected(null) }} onMark={onMark} onSend={onSend} />
       <CrearAlertaModal open={showCreate} onClose={()=>setShowCreate(false)} onCreate={onCreate} />
       {showSend && <GeneradorAlertas onClose={()=>{ setShowSend(false); setSendCliente(undefined) }} initialCliente={sendCliente} />}
+      
+      <EnviarWhatsAppModal
+        open={whatsappOpen}
+        onClose={() => { setWhatsappOpen(false); setWhatsappAlerta(null) }}
+        tipo="alerta"
+        destinatario={{
+          nombre: whatsappAlerta?.cliente || whatsappAlerta?.proveedor || '',
+          telefono: '', // Aquí deberías tener el teléfono del cliente
+        }}
+        datos={{
+          concepto: whatsappAlerta?.titulo || '',
+          fecha: whatsappAlerta?.fecha ? new Date(whatsappAlerta.fecha).toLocaleDateString() : '',
+        }}
+      />
     </div>
   )
 }

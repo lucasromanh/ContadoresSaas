@@ -9,6 +9,7 @@ import GeneradorAlertas from './GeneradorAlertas'
 import TimelineVencimientos from './TimelineVencimientos'
 import ModalDiaVencimientos from './ModalDiaVencimientos'
 import vencimientosService, { Vencimiento } from './services/vencimientosService'
+import EnviarWhatsAppModal from '../../components/whatsapp/EnviarWhatsAppModal'
 
 export default function VencimientosPage(){
   const [items, setItems] = useState<Vencimiento[]>([])
@@ -17,6 +18,8 @@ export default function VencimientosPage(){
   const [showModal, setShowModal] = useState(false)
   const [dayModal, setDayModal] = useState<{ date: string; items: Vencimiento[] } | null>(null)
   const [alertInitialCliente, setAlertInitialCliente] = useState<string|undefined>(undefined)
+  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [whatsappVencimiento, setWhatsappVencimiento] = useState<Vencimiento | null>(null)
 
   useEffect(()=>{
     vencimientosService.loadMock().then((d)=> setItems(d))
@@ -43,6 +46,11 @@ export default function VencimientosPage(){
     setItems([...vencimientosService.getAll()])
   }
 
+  function onWhatsApp(vencimiento: Vencimiento){
+    setWhatsappVencimiento(vencimiento)
+    setWhatsappOpen(true)
+  }
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Vencimientos</h2>
@@ -64,7 +72,7 @@ export default function VencimientosPage(){
             <h3 className="text-sm font-medium mb-2">Proximos vencimientos</h3>
             <div className="space-y-2">
               {filtered().slice(0,6).map((it)=> (
-                <TarjetaVencimiento key={it.id} item={it} onView={() => setSelected(it)} onSend={() => { setSelected(it); setShowModal(true) }} />
+                <TarjetaVencimiento key={it.id} item={it} onView={() => setSelected(it)} onSend={() => { setSelected(it); setShowModal(true) }} onWhatsApp={() => onWhatsApp(it)} />
               ))}
             </div>
           </div>
@@ -76,6 +84,20 @@ export default function VencimientosPage(){
   {dayModal && <>
     <ModalDiaVencimientos date={dayModal.date} items={dayModal.items} onClose={()=> setDayModal(null)} onMark={(id: string, estado: Vencimiento['estado'])=>{ onMark(id, estado); setDayModal(null) }} onView={(v: Vencimiento)=>{ setSelected(v); setDayModal(null) }} onSend={(cliente?: string)=>{ setAlertInitialCliente(cliente); setShowModal(true); setDayModal(null) }} />
   </>}
+  
+  <EnviarWhatsAppModal
+    open={whatsappOpen}
+    onClose={() => { setWhatsappOpen(false); setWhatsappVencimiento(null) }}
+    tipo="alerta"
+    destinatario={{
+      nombre: whatsappVencimiento?.cliente || '',
+      telefono: '', // Aquí deberías tener el teléfono del cliente
+    }}
+    datos={{
+      concepto: whatsappVencimiento?.descripcion || '',
+      fecha: whatsappVencimiento?.fecha || '',
+    }}
+  />
     </div>
   )
 }

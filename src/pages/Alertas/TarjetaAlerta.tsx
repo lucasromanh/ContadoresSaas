@@ -2,7 +2,7 @@ import React from 'react'
 import { Alerta } from './services/alertasService'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
-import { Bell, AlertTriangle, FileText, Users } from 'lucide-react'
+import { Bell, AlertTriangle, FileText, Users, MessageCircle } from 'lucide-react'
 
 function iconFor(tipo: Alerta['tipo']){
   switch(tipo){
@@ -13,7 +13,7 @@ function iconFor(tipo: Alerta['tipo']){
   }
 }
 
-export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alerta: Alerta; onView?: (a:Alerta)=>void; onMark?: (id:string, estado: any)=>void; onSend?: (cliente?:string)=>void }){
+export default function TarjetaAlerta({ alerta, onView, onMark, onSend, onWhatsApp }:{ alerta: Alerta; onView?: (a:Alerta)=>void; onMark?: (id:string, estado: any)=>void; onSend?: (cliente?:string)=>void; onWhatsApp?: (a:Alerta)=>void }){
   return (
     <Card className="w-full p-0">
       <div className="flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4">
@@ -44,6 +44,10 @@ export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alert
               <Button size="sm" variant="ghost" onClick={()=> onMark && onMark(alerta.id, 'leida')}>Marcar leída</Button>
             )}
             <Button size="sm" variant="default" onClick={()=> onSend && onSend(alerta.cliente || alerta.proveedor || alerta.cuit)}>Recordar</Button>
+            <Button size="sm" variant="outline" onClick={()=> onWhatsApp && onWhatsApp(alerta)} className="gap-1">
+              <MessageCircle className="w-3 h-3" />
+              WhatsApp
+            </Button>
           </div>
         </div>
         {/* Botones en desktop - a la derecha */}
@@ -59,8 +63,12 @@ export default function TarjetaAlerta({ alerta, onView, onMark, onSend }:{ alert
               <Button size="sm" variant="ghost" onClick={()=> onMark && onMark(alerta.id, 'leida')}>Marcar leída</Button>
             )}
           </div>
-          <div>
+          <div className="flex flex-col gap-2">
             <Button size="sm" variant="default" onClick={()=> onSend && onSend(alerta.cliente || alerta.proveedor || alerta.cuit)}>Recordar</Button>
+            <Button size="sm" variant="outline" onClick={()=> onWhatsApp && onWhatsApp(alerta)} className="gap-1">
+              <MessageCircle className="w-3 h-3" />
+              WhatsApp
+            </Button>
           </div>
         </div>
       </div>

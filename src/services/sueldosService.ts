@@ -97,17 +97,16 @@ const sueldosService = {
 
     if (file){
       const read = new FileReader()
-      // Avoid inlining very large files as base64 in localStorage. Inline only when reasonably small.
-      const MAX_INLINE_BYTES = 2 * 1024 * 1024 // 2MB
-      if (file.size && file.size < MAX_INLINE_BYTES){
-        const dataUrl: Promise<string> = new Promise((res, rej)=>{ read.onload = ()=> res(String(read.result)); read.onerror = rej; read.readAsDataURL(file) })
-        try{
-          internal.archivoOriginalUrl = await dataUrl
-        }catch(e){
-          internal.archivoOriginalUrl = `file:${file.name}`
-        }
-      } else {
-        // large file: store lightweight reference (filename) instead of full base64
+      // Guardar siempre el archivo completo para poder mostrarlo después
+      const dataUrl: Promise<string> = new Promise((res, rej)=>{ 
+        read.onload = ()=> res(String(read.result)); 
+        read.onerror = rej; 
+        read.readAsDataURL(file) 
+      })
+      try{
+        internal.archivoOriginalUrl = await dataUrl
+      }catch(e){
+        console.error('Error al leer archivo:', e)
         internal.archivoOriginalUrl = `file:${file.name}`
       }
       // ensure metadata contains filename
