@@ -2,12 +2,13 @@ import React, { useState } from 'react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
-import { toastSuccess, toastError } from '../../components/ui'
+import { toastSuccess, toastError, toastInfo } from '../../components/ui'
 import { useNavigate } from 'react-router-dom'
 import { useUserStore } from '../../store/useUserStore'
 import useAppStore from '../../store/useAppStore'
 import { ThemeToggle } from '../../components/ui/ThemeToggle'
 import { CheckCircle, FileText, Users, BarChart, ShieldCheck, BookOpen, Folder, UserCheck, Smartphone } from 'lucide-react'
+import emailService from '../../services/emailService'
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate()
@@ -148,7 +149,7 @@ export const HomePage: React.FC = () => {
                     <label htmlFor="wait_join" className="text-sm">Quiero unirme a la lista de espera</label>
                   </div>
                   <div className="flex items-center gap-3">
-                    <Button onClick={() => {
+                    <Button onClick={async () => {
                       try{
                         const nameEl = document.getElementById('wait_name') as HTMLInputElement | null
                         const emailEl = document.getElementById('wait_email') as HTMLInputElement | null
@@ -158,22 +159,51 @@ export const HomePage: React.FC = () => {
                         const email = emailEl?.value?.trim() || ''
                         const message = msgEl?.value?.trim() || ''
                         const join = !!(joinEl && joinEl.checked)
-                        // basic validation for email
+                        
+                        // Validación básica
                         const emailRx = /^\S+@\S+\.\S+$/
-                        if (email && !emailRx.test(email)) return toastError('Ingresá un email válido')
-                        if (!name && !email && !message) return toastError('Completá al menos un campo para sumarte o contarnos algo')
-                        const item = { id: 'w_' + Date.now().toString(36), nombre: name, email, mensaje: message, join, createdAt: new Date().toISOString() }
+                        if (!name) return toastError('Ingresá tu nombre')
+                        if (!email) return toastError('Ingresá tu email')
+                        if (!emailRx.test(email)) return toastError('Ingresá un email válido')
+                        if (!join) return toastError('Marcá la casilla para unirte a la lista de espera')
+                        
+                        // Guardar en localStorage
+                        const item = { 
+                          id: 'w_' + Date.now().toString(36), 
+                          nombre: name, 
+                          email, 
+                          mensaje: message, 
+                          join, 
+                          createdAt: new Date().toISOString() 
+                        }
                         const raw = localStorage.getItem('waitlist_v1')
                         const arr = raw ? JSON.parse(raw) : []
                         arr.push(item)
                         localStorage.setItem('waitlist_v1', JSON.stringify(arr))
-                        // clear form
+                        
+                        // Enviar emails
+                        toastSuccess('Enviando confirmación...')
+                        const success = await emailService.enviarEmailListaEspera({
+                          nombre: name,
+                          email: email,
+                          mensaje: message
+                        })
+                        
+                        // Limpiar formulario
                         if (nameEl) nameEl.value = ''
                         if (emailEl) emailEl.value = ''
                         if (msgEl) msgEl.value = ''
                         if (joinEl) joinEl.checked = false
-                        toastSuccess('Gracias — te agregamos a la lista de espera')
-                      }catch(e){ console.error(e); toastError('No se pudo guardar la solicitud en este navegador') }
+                        
+                        if (success) {
+                          toastSuccess('¡Gracias! Revisa tu email para confirmar tu registro')
+                        } else {
+                          toastError('Registro guardado localmente, pero hubo un problema al enviar el email. Verifica la configuración de EmailJS.')
+                        }
+                      }catch(e){ 
+                        console.error(e)
+                        toastError('Error al procesar el registro. Intenta nuevamente.')
+                      }
                     }}>Enviar</Button>
                     <Button variant="outline" onClick={() => { const raw = localStorage.getItem('waitlist_v1') || '[]'; try{ navigator.clipboard?.writeText(raw); toastSuccess('Contenido copiado al portapapeles') }catch(e){ toastError('No se pudo copiar') } }}>Copiar datos (dev)</Button>
                   </div>
