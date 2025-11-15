@@ -30,14 +30,24 @@ const Avatar: React.FC<{ name?: string; avatarUrl?: string }> = ({ name, avatarU
 const ProfileCard: React.FC<{ user: User }> = ({ user }) => {
   const navigate = useNavigate()
   const [avatarUrl, setAvatarUrl] = useState<string|undefined>(undefined)
+  const [displayName, setDisplayName] = useState<string>(user?.name || 'Usuario')
 
   useEffect(()=>{
     let mounted = true
-    perfilService.getFresh().then(p=>{ if (mounted) setAvatarUrl((p && (p as any).avatarUrl) || undefined) })
-    const handler = ()=> perfilService.getFresh().then(p=> setAvatarUrl((p && (p as any).avatarUrl) || undefined))
+    perfilService.getFresh().then(p=>{ 
+      if (mounted) {
+        setAvatarUrl((p && (p as any).avatarUrl) || undefined)
+        setDisplayName((p && (p as any).nombreCompleto) || user?.name || 'Usuario')
+      }
+    })
+    const handler = ()=> perfilService.getFresh().then(p=> {
+      setAvatarUrl((p && (p as any).avatarUrl) || undefined)
+      setDisplayName((p && (p as any).nombreCompleto) || user?.name || 'Usuario')
+    })
     try{ perfilService.emitter.addEventListener('change', handler) }catch(e){}
     return ()=>{ mounted=false; try{ perfilService.emitter.removeEventListener('change', handler) }catch(e){} }
-  }, [])
+  }, [user])
+  
   if (!user)
     return (
       <div className="flex items-center justify-between">
@@ -49,16 +59,16 @@ const ProfileCard: React.FC<{ user: User }> = ({ user }) => {
   const goProfile = () => navigate('/profile')
 
   return (
-    <div className="flex items-center justify-between space-x-3">
+    <div 
+      onClick={goProfile}
+      className="flex items-center justify-between space-x-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 p-2 rounded-lg transition-colors"
+    >
       <div className="flex items-center space-x-3">
-        <Avatar name={user.name} avatarUrl={avatarUrl} />
+        <Avatar name={displayName} avatarUrl={avatarUrl} />
         <div>
-          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{user.name}</div>
+          <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{displayName}</div>
           <div className="text-xs text-slate-600 dark:text-slate-300">{user.role}</div>
         </div>
-      </div>
-      <div>
-        <Button variant="ghost" size="sm" onClick={goProfile}>Perfil</Button>
       </div>
     </div>
   )

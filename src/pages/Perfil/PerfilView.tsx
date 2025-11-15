@@ -8,7 +8,19 @@ import { Button } from '../../components/ui/Button'
 export default function PerfilView({ onEdit }:{ onEdit?: ()=>void }){
   const [perfil, setPerfil] = useState<PerfilContador|null>(null)
 
-  useEffect(()=>{ perfilService.getFresh().then(p=> setPerfil(p)) }, [])
+  const loadPerfil = async () => {
+    const p = await perfilService.getFresh()
+    setPerfil(p)
+  }
+
+  useEffect(()=>{ 
+    loadPerfil()
+    const handler = () => loadPerfil()
+    try { perfilService.emitter.addEventListener('change', handler) } catch(e) {}
+    return () => {
+      try { perfilService.emitter.removeEventListener('change', handler) } catch(e) {}
+    }
+  }, [])
 
   if (!perfil) return <div>Cargando perfil...</div>
 
@@ -16,10 +28,20 @@ export default function PerfilView({ onEdit }:{ onEdit?: ()=>void }){
     <div className="space-y-4 p-4">
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full md:w-48">
-          <AvatarUploader value={perfil.avatarUrl} onChange={async (d)=>{ await perfilService.saveAvatar(d); setPerfil(await perfilService.getFresh()) }} />
+          <AvatarUploader 
+            value={perfil.avatarUrl} 
+            onChange={async (d)=> { 
+              await perfilService.saveAvatar(d)
+            }} 
+          />
           <div className="mt-4">
-            <div className="text-xs text-slate-500">Firma digital</div>
-            <FirmaUploader value={perfil.firmaDigitalUrl} onChange={async (d)=>{ await perfilService.saveFirma(d); setPerfil(await perfilService.getFresh()) }} />
+            <div className="text-xs text-slate-500 mb-2">Firma digital</div>
+            <FirmaUploader 
+              value={perfil.firmaDigitalUrl} 
+              onChange={async (d)=> { 
+                await perfilService.saveFirma(d)
+              }} 
+            />
           </div>
         </div>
         <div className="flex-1">

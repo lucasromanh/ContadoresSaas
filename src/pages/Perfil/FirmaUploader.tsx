@@ -71,10 +71,6 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
       isDown = false
       setDrawing(false)
       try{ (ev.target as Element).releasePointerCapture(ev.pointerId) }catch(e){}
-      // export
-      const data = c.toDataURL('image/png')
-      setPreview(data)
-      onChange(data)
     }
 
     c.addEventListener('pointerdown', onPointerDown)
@@ -98,6 +94,13 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
     onChange('')
   }
 
+  const save = () => {
+    const c = canvasRef.current; if (!c) return
+    const data = c.toDataURL('image/png')
+    setPreview(data)
+    onChange(data)
+  }
+
   const uploadFile = (e: React.ChangeEvent<HTMLInputElement>)=>{
     const f = e.target.files?.[0]; if (!f) return
     const r = new FileReader(); r.onload = ()=>{ const d = String(r.result); setPreview(d); onChange(d) }; r.readAsDataURL(f)
@@ -105,16 +108,19 @@ export default function FirmaUploader({ value, onChange }:{ value?: string; onCh
 
   return (
     <div className="space-y-2">
-      <div className="border rounded p-2">
-        <canvas ref={canvasRef} className="w-full h-48 bg-white" />
+      <div className="text-xs font-medium mb-1">Dibuja tu firma:</div>
+      <div className="border rounded p-2 bg-white dark:bg-slate-100">
+        <canvas ref={canvasRef} className="w-full h-48" />
       </div>
-      <div className="flex gap-2">
-        <input type="file" accept="image/*" onChange={uploadFile} />
-        <Button size="sm" onClick={clear}>Borrar</Button>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={save}>Guardar firma</Button>
+        <Button size="sm" variant="outline" onClick={clear}>Limpiar</Button>
       </div>
+      <div className="text-xs text-slate-500">O subir imagen:</div>
+      <input type="file" accept="image/*" onChange={uploadFile} className="text-sm" />
       {preview && (
         <div className="mt-2">
-          <div className="text-xs text-slate-500">Vista previa</div>
+          <div className="text-xs text-slate-500">Firma guardada:</div>
           <img src={preview} alt="firma" className="mt-1 border" style={{ maxHeight: 120 }} />
         </div>
       )}

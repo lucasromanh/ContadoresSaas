@@ -6,6 +6,8 @@ import { Form, FormField } from '../../components/ui/Form'
 import Input from '../../components/ui/Input'
 import { Button } from '../../components/ui/Button'
 import proveedoresService from '../../services/proveedoresService'
+import EnviarWhatsAppModal from '../../components/whatsapp/EnviarWhatsAppModal'
+import { MessageCircle } from 'lucide-react'
 
 import PageContainer from '../../components/layout/PageContainer'
 
@@ -15,6 +17,8 @@ export const ProveedoresPage: React.FC = () => {
   const [openNew, setOpenNew] = useState(false)
   const [editing, setEditing] = useState<any | null>(null)
   const [viewing, setViewing] = useState<any | null>(null)
+  const [whatsappOpen, setWhatsappOpen] = useState(false)
+  const [whatsappProveedor, setWhatsappProveedor] = useState<any | null>(null)
 
   const fetch = async () => {
     setLoading(true)
@@ -45,6 +49,11 @@ export const ProveedoresPage: React.FC = () => {
     fetch()
   }
 
+  const handleWhatsApp = (proveedor: any) => {
+    setWhatsappProveedor(proveedor)
+    setWhatsappOpen(true)
+  }
+
   return (
     <PageContainer>
       <div className="space-y-4">
@@ -67,10 +76,14 @@ export const ProveedoresPage: React.FC = () => {
             <div key={p.id} className="p-2 border rounded">
               <div className="font-medium">{p.razon_social}</div>
               <div className="text-sm text-slate-500">{p.cuit}</div>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-2 flex flex-wrap gap-2">
                 <Button onClick={() => setViewing(p)}>Ver</Button>
                 <Button onClick={() => setEditing(p)}>Editar</Button>
                 <Button onClick={() => handleDelete(p.id)}>Eliminar</Button>
+                <Button variant="outline" onClick={() => handleWhatsApp(p)} className="gap-1">
+                  <MessageCircle className="w-4 h-4" />
+                  WhatsApp
+                </Button>
               </div>
             </div>
           ))}
@@ -133,6 +146,16 @@ export const ProveedoresPage: React.FC = () => {
           </Form>
         </Dialog>
       )}
+      
+      <EnviarWhatsAppModal
+        open={whatsappOpen}
+        onClose={() => { setWhatsappOpen(false); setWhatsappProveedor(null) }}
+        tipo="custom"
+        destinatario={{
+          nombre: whatsappProveedor?.razon_social || whatsappProveedor?.nombre || '',
+          telefono: whatsappProveedor?.telefono || '',
+        }}
+      />
       </div>
     </PageContainer>
   )
