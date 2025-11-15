@@ -1,7 +1,7 @@
 import React from 'react'
 import { useUserStore } from '../../store/useUserStore'
 import { ThemeToggle } from '../ui/ThemeToggle'
-import { Dialog } from '../ui/Dialog'
+import { Sheet } from '../ui/Sheet'
 import SidebarContent from './SidebarContent'
 
 export const Header: React.FC = () => {
@@ -33,12 +33,10 @@ export const Header: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile sidebar dialog */}
-      <Dialog open={open} onOpenChange={(v) => setOpen(v)} title="Navegación">
-        <div className="h-full">
-          <SidebarContent onNavigate={() => setOpen(false)} />
-        </div>
-      </Dialog>
+      {/* Mobile sidebar sheet */}
+      <Sheet open={open} onOpenChange={(v) => setOpen(v)} side="left">
+        <SidebarContent onNavigate={() => setOpen(false)} />
+      </Sheet>
     </header>
   )
 }

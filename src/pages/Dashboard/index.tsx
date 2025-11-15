@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import { Card } from '../../components/ui/Card'
 import ClickableCard from '../../components/ui/ClickableCard'
 import { RechartsChart } from '../../components/charts/RechartsChart'
@@ -73,7 +74,7 @@ export const DashboardPage: React.FC = () => {
               <ul className="space-y-2">
                 {ranking.map((r: any, i: number) => (
                   <li key={i} className="flex items-center justify-between">
-                    <a className="font-medium text-blue-600 hover:underline" href="/clientes">{r.name ?? r.nombre ?? 'Cliente'}</a>
+                    <Link to="/clientes" className="font-medium text-blue-600 hover:underline">{r.name ?? r.nombre ?? 'Cliente'}</Link>
                     <div className="text-sm text-slate-600">{r.value ?? r.monto ?? '-'}</div>
                   </li>
                 ))}
@@ -99,7 +100,7 @@ export const DashboardPage: React.FC = () => {
                 <div className="text-sm text-slate-500">{alertCounts.pendientes} pendientes • {alertCounts.urgentes} urgentes</div>
               </div>
               <div>
-                <a href="/alertas" className="text-sm text-blue-600 hover:underline">Ver alertas</a>
+                <Link to="/alertas" className="text-sm text-blue-600 hover:underline">Ver alertas</Link>
               </div>
             </div>
           </Card>
